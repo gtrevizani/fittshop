@@ -28,11 +28,11 @@ USER fittuser:fittgroup
 COPY --from=builder /workspace/target/fittshop-backend-1.0.0-SNAPSHOT.jar app.jar
 
 ENV PORT=8080
-ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+ExitOnOutOfMemoryError"
+ENV JAVA_OPTS="-Xmx256m -Xms128m -XX:MaxMetaspaceSize=128m -XX:+UseSerialGC -Xss256k -XX:+ExitOnOutOfMemoryError"
 EXPOSE 8080
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
-  CMD wget --quiet --tries=1 --spider http://localhost:${PORT}/api/products || exit 1
+  CMD wget --quiet --tries=1 --spider http://localhost:${PORT}/api/actuator/health || exit 1
 
 ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -Djava.security.egd=file:/dev/./urandom -jar app.jar"]
 
