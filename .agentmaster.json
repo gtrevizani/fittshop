@@ -1,0 +1,19 @@
+{
+  "name": "fittshop",
+  "projectKey": "FITT",
+  "confluenceSpace": "FITT",
+  "mode": "BROWNFIELD",
+  "stack": "Docker Compose, Docker, Java / Spring Boot, Node.js",
+  "testCommand": "npm test",
+  "antiMockScope": [
+    "src",
+    "frontend",
+    "app"
+  ],
+  "governance": {
+    "enforcePrGate": true,
+    "enforceThreeStateUi": true,
+    "zeroSecretLeak": true
+  },
+  "createdAt": "2026-10-24T14:09:22.432Z"
+}
