@@ -21,11 +21,11 @@ FROM eclipse-temurin:21-jre-alpine AS runtime
 WORKDIR /app
 
 # DevSecOps Hardening: Create non-root unprivileged service account
-RUN addgroup -S fittgroup && adduser -S fittuser -G fittgroup
+RUN addgroup -S fittgroup && adduser -S fittuser -G fittgroup && chown -R fittuser:fittgroup /app
 USER fittuser:fittgroup
 
 # Copy built JAR from builder stage
-COPY --from=builder /workspace/target/fittshop-backend-1.0.0-SNAPSHOT.jar app.jar
+COPY --chown=fittuser:fittgroup --from=builder /workspace/target/fittshop-backend-1.0.0-SNAPSHOT.jar app.jar
 
 ENV PORT=8080
 # Container-aware memory flags: adapts to Render 512MB RAM without choking Metaspace

@@ -7,6 +7,7 @@ import com.fittshop.domain.model.Customer;
 import com.fittshop.domain.model.Order;
 import com.fittshop.repository.CustomerRepository;
 import com.fittshop.repository.OrderRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +30,7 @@ public class FiscalInvoiceService {
     private final CustomerRepository customerRepository;
     private final SefazAccessKeyGenerator keyGenerator;
 
+    @Autowired
     public FiscalInvoiceService(OrderRepository orderRepository, CustomerRepository customerRepository) {
         this.orderRepository = orderRepository;
         this.customerRepository = customerRepository;
