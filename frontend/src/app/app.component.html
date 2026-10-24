@@ -40,7 +40,7 @@
   <app-checkout-modal *ngIf="cartService.isCheckoutModalOpen()"></app-checkout-modal>
 
   <!-- Athlete Auth / Login & Register Modal -->
-  <app-auth-modal *ngIf="showAuthModal" (closeEvent)="showAuthModal = false"></app-auth-modal>
+  <app-auth-modal *ngIf="showAuthModal || authService.isAuthModalOpen()" (closeEvent)="showAuthModal = false; authService.closeLoginModal()"></app-auth-modal>
 
   <!-- Modern Fitness Footer -->
   <footer class="fitt-footer">

@@ -2,6 +2,7 @@ import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ProductService } from '../../services/product.service';
 import { CartService } from '../../services/cart.service';
+import { AuthService } from '../../services/auth.service';
 import { Product } from '../../models/product.model';
 
 @Component({
@@ -22,7 +23,8 @@ export class CatalogComponent {
 
   constructor(
     public productService: ProductService,
-    private cartService: CartService
+    private cartService: CartService,
+    private authService: AuthService
   ) {}
 
   filteredProducts(): Product[] {
@@ -49,6 +51,10 @@ export class CatalogComponent {
   }
 
   addToCart(product: Product): void {
+    if (!this.authService.isAuthenticated()) {
+      this.authService.openLoginModal('🔒 Para adicionar itens ao carrinho e reservar estoque com segurança atômica, acesse ou cadastre sua conta de Atleta!');
+      return;
+    }
     this.cartService.addItem(product, 1);
   }
 

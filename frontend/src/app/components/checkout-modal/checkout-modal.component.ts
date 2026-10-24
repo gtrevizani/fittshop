@@ -48,6 +48,11 @@ export class CheckoutModalComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    if (!this.authService.isAuthenticated()) {
+      this.cartService.isCheckoutModalOpen.set(false);
+      this.authService.openLoginModal('🔒 Para acessar o Checkout Seguro, identifique-se com sua conta de Atleta.');
+      return;
+    }
     const user = this.authService.currentUser();
     if (user) {
       this.customerName = user.name;

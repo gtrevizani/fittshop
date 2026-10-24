@@ -144,3 +144,26 @@
 .quick-credentials-hint code {
   color: var(--accent-cyan);
 }
+
+.auth-notice-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 184, 0, 0.12);
+  border-left: 3px solid #ffb800;
+  border-bottom: 1px solid rgba(255, 184, 0, 0.2);
+  padding: 12px 18px;
+}
+
+.notice-icon {
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.notice-text {
+  font-size: 0.82rem;
+  color: #ffda79;
+  line-height: 1.4;
+  margin: 0;
+  font-weight: 500;
+}

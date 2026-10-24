@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RecommendationService } from '../../services/recommendation.service';
 import { CartService } from '../../services/cart.service';
+import { AuthService } from '../../services/auth.service';
 import { AthleteProfilePayload, RecommendationResult } from '../../models/recommendation.model';
 import { Product } from '../../models/product.model';
 
@@ -27,7 +28,8 @@ export class RecommenderComponent {
 
   constructor(
     private recommendationService: RecommendationService,
-    private cartService: CartService
+    private cartService: CartService,
+    public authService: AuthService
   ) {}
 
   calculate(): void {
@@ -52,6 +54,11 @@ export class RecommenderComponent {
   }
 
   addComboToCart(): void {
+    if (!this.authService.isAuthenticated()) {
+      this.closeEvent.emit();
+      this.authService.openLoginModal('🔒 Para adicionar o Combo NutriFit IA à sua sacola, acesse sua conta de Atleta!');
+      return;
+    }
     if (this.result && this.result.recommendedProducts) {
       this.cartService.addCombo(this.result.recommendedProducts);
       this.closeEvent.emit();
@@ -59,6 +66,11 @@ export class RecommenderComponent {
   }
 
   addProduct(product: Product): void {
+    if (!this.authService.isAuthenticated()) {
+      this.closeEvent.emit();
+      this.authService.openLoginModal('🔒 Para adicionar itens à sua sacola, acesse sua conta de Atleta!');
+      return;
+    }
     this.cartService.addItem(product, 1);
   }
 }

@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CartService } from '../../services/cart.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-cart-drawer',
@@ -23,7 +24,10 @@ export class CartDrawerComponent {
   isCalculatingFreight = false;
   freightErrorMessage = '';
 
-  constructor(public cartService: CartService) {}
+  constructor(
+    public cartService: CartService,
+    public authService: AuthService
+  ) {}
 
   applyCoupon(): void {
     if (!this.couponInput.trim()) return;
@@ -72,6 +76,11 @@ export class CartDrawerComponent {
   }
 
   proceedToCheckout(): void {
+    if (!this.authService.isAuthenticated()) {
+      this.cartService.isCartOpen.set(false);
+      this.authService.openLoginModal('🔒 Para avançar ao Checkout Seguro e emitir sua reserva atômica de estoque, acesse sua conta ou cadastre-se!');
+      return;
+    }
     this.cartService.isCartOpen.set(false);
     this.cartService.isCheckoutModalOpen.set(true);
   }

@@ -9,6 +9,12 @@
       <button class="close-btn" (click)="closeEvent.emit()">✕</button>
     </div>
 
+    <!-- Security & Purpose Notice Banner -->
+    <div *ngIf="authService.authModalNotice()" class="auth-notice-banner">
+      <span class="notice-icon">🛡️</span>
+      <p class="notice-text">{{ authService.authModalNotice() }}</p>
+    </div>
+
     <!-- Mode Selector Tabs -->
     <div class="auth-tabs">
       <button 

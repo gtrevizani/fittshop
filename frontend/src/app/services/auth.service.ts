@@ -37,10 +37,22 @@ export class AuthService {
 
   currentUser = signal<AuthUser | null>(null);
   token = signal<string | null>(null);
+  isAuthModalOpen = signal<boolean>(false);
+  authModalNotice = signal<string | null>(null);
 
   currentRole = computed<UserRole>(() => this.currentUser()?.role || 'ROLE_CUSTOMER');
   currentUserName = computed<string>(() => this.currentUser()?.name || 'Atleta Visitante');
   isAuthenticated = computed<boolean>(() => !!this.token());
+
+  openLoginModal(notice?: string): void {
+    this.authModalNotice.set(notice || null);
+    this.isAuthModalOpen.set(true);
+  }
+
+  closeLoginModal(): void {
+    this.isAuthModalOpen.set(false);
+    this.authModalNotice.set(null);
+  }
 
   constructor(private http: HttpClient) {
     this.loadSessionFromStorage();
