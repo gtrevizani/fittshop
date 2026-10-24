@@ -1,0 +1,58 @@
+import { Component, Input } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ProductService } from '../../services/product.service';
+import { CartService } from '../../services/cart.service';
+import { Product } from '../../models/product.model';
+
+@Component({
+  selector: 'app-catalog',
+  standalone: true,
+  imports: [CommonModule],
+  templateUrl: './catalog.component.html',
+  styleUrls: ['./catalog.component.css']
+})
+export class CatalogComponent {
+  @Input() selectedGoal = 'TODOS';
+  @Input() searchQuery = '';
+
+  selectedCategory = 'TODOS';
+  categories = ['TODOS', 'Suplementos', 'Roupas', 'Acessórios', 'Combos'];
+
+  expandedNutritionalId: number | null = null;
+
+  constructor(
+    public productService: ProductService,
+    private cartService: CartService
+  ) {}
+
+  filteredProducts(): Product[] {
+    let prods = this.productService.getProducts();
+
+    if (this.selectedCategory !== 'TODOS') {
+      prods = prods.filter(p => p.category.toLowerCase() === this.selectedCategory.toLowerCase());
+    }
+
+    if (this.selectedGoal !== 'TODOS') {
+      prods = prods.filter(p => p.targetGoal === this.selectedGoal);
+    }
+
+    if (this.searchQuery && this.searchQuery.trim().length > 0) {
+      const q = this.searchQuery.toLowerCase();
+      prods = prods.filter(p =>
+        p.name.toLowerCase().includes(q) ||
+        p.description.toLowerCase().includes(q) ||
+        p.category.toLowerCase().includes(q)
+      );
+    }
+
+    return prods;
+  }
+
+  addToCart(product: Product): void {
+    this.cartService.addItem(product, 1);
+  }
+
+  toggleNutritional(id: number): void {
+    this.expandedNutritionalId = this.expandedNutritionalId === id ? null : id;
+  }
+}

@@ -1,0 +1,236 @@
+.hero-section {
+  position: relative;
+  padding: 60px 0 40px;
+  overflow: hidden;
+  border-bottom: 1px solid var(--border-subtle);
+  background: radial-gradient(circle at 70% 30%, rgba(204, 255, 0, 0.08) 0%, transparent 60%);
+}
+
+.hero-container {
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 40px;
+  align-items: center;
+}
+
+.hero-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.hero-title {
+  font-size: 3.4rem;
+  line-height: 1.05;
+  font-weight: 900;
+  margin-bottom: 18px;
+}
+
+.highlight-text {
+  background: linear-gradient(135deg, var(--accent-lime) 30%, var(--accent-cyan) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 30px rgba(204, 255, 0, 0.3);
+}
+
+.hero-description {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  max-width: 580px;
+  line-height: 1.6;
+  margin-bottom: 28px;
+}
+
+.hero-cta-group {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 36px;
+  flex-wrap: wrap;
+}
+
+.goal-selector-wrapper {
+  background: rgba(16, 20, 27, 0.7);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  backdrop-filter: blur(8px);
+}
+
+.goal-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  margin-bottom: 12px;
+}
+
+.goal-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
+}
+
+.goal-card-btn {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-subtle);
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  transition: all var(--transition-fast);
+}
+
+.goal-card-btn:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: var(--border-medium);
+  transform: translateY(-2px);
+}
+
+.goal-card-btn.active {
+  background: var(--accent-lime-light);
+  border-color: var(--accent-lime);
+  box-shadow: 0 0 14px var(--accent-lime-glow);
+}
+
+.goal-icon {
+  font-size: 1.4rem;
+}
+
+.goal-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.goal-name {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.goal-card-btn.active .goal-name {
+  color: var(--accent-lime);
+}
+
+.goal-desc {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+}
+
+/* Visual Side */
+.hero-visual {
+  position: relative;
+  height: 420px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-image-backdrop {
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(204, 255, 0, 0.2) 0%, transparent 70%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pulseLime 4s infinite;
+}
+
+.hero-glow-logo {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--accent-lime);
+  box-shadow: 0 0 40px var(--accent-lime-glow);
+}
+
+.stat-card {
+  position: absolute;
+  background: rgba(19, 23, 31, 0.92);
+  border: 1px solid var(--border-medium);
+  backdrop-filter: blur(16px);
+  padding: 12px 18px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: var(--shadow-md);
+  animation: floatCard 6s ease-in-out infinite;
+}
+
+.stat-card-1 {
+  top: 20px;
+  left: 10px;
+  animation-delay: 0s;
+}
+
+.stat-card-2 {
+  bottom: 40px;
+  left: 20px;
+  animation-delay: 2s;
+}
+
+.stat-card-3 {
+  top: 50px;
+  right: 10px;
+  animation-delay: 4s;
+}
+
+@keyframes floatCard {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.stat-icon {
+  font-size: 1.5rem;
+}
+
+.stat-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-num {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.stat-sub {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+@media (max-width: 992px) {
+  .hero-container {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+  .hero-badges, .hero-cta-group {
+    justify-content: center;
+  }
+  .hero-description {
+    margin: 0 auto 28px;
+  }
+  .hero-visual {
+    height: 300px;
+  }
+}
+
+@media (max-width: 600px) {
+  .hero-title {
+    font-size: 2.3rem;
+  }
+  .goal-buttons {
+    grid-template-columns: 1fr 1fr;
+  }
+}

@@ -1,0 +1,355 @@
+.backoffice-section {
+  padding: 40px 0 60px;
+  background: #090c10;
+  border-top: 1px solid var(--border-medium);
+}
+
+.backoffice-container {
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.backoffice-header {
+  margin-bottom: 28px;
+}
+
+.backoffice-header h2 {
+  font-size: 1.8rem;
+  margin: 8px 0 4px;
+}
+
+.role-indicator {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.role-indicator strong {
+  color: var(--accent-lime);
+}
+
+.role-indicator code {
+  color: var(--accent-cyan);
+}
+
+.backoffice-tabs {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.bo-tab {
+  padding: 10px 18px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+  font-weight: 700;
+  border: 1px solid var(--border-subtle);
+}
+
+.bo-tab:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.bo-tab.active {
+  background: var(--accent-cyan-glow);
+  color: var(--accent-cyan);
+  border-color: var(--accent-cyan);
+}
+
+.tab-content {
+  animation: fadeIn 0.3s ease;
+}
+
+.tab-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.panel {
+  padding: 24px;
+}
+
+.panel h3 {
+  font-size: 1.2rem;
+  margin-bottom: 4px;
+}
+
+.panel-desc {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+}
+
+.alert-success {
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  color: #4ade80;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  margin-bottom: 16px;
+}
+
+.form-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.bo-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bo-field label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.bo-field input, .bo-field select {
+  background: #141822;
+  border: 1px solid var(--border-medium);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  color: #fff;
+  font-family: inherit;
+  font-size: 0.88rem;
+  outline: none;
+}
+
+.bo-field input:focus, .bo-field select:focus {
+  border-color: var(--accent-lime);
+}
+
+.row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.stock-table-wrapper, .orders-table-wrapper {
+  overflow-x: auto;
+}
+
+.bo-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  text-align: left;
+}
+
+.bo-table th {
+  padding: 10px;
+  border-bottom: 1px solid var(--border-medium);
+  color: var(--text-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+}
+
+.bo-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+}
+
+.stock-pill {
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 4px 8px;
+  border-radius: var(--radius-full);
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+}
+
+.stock-pill.alert {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+}
+
+.panel-header-action {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.caixa-stat {
+  display: flex;
+  flex-direction: column;
+  background: rgba(204, 255, 0, 0.08);
+  border: 1px solid var(--border-active);
+  padding: 10px 18px;
+  border-radius: var(--radius-md);
+  text-align: right;
+}
+
+.stat-title {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.stat-amt {
+  font-family: var(--font-heading);
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: var(--accent-lime);
+}
+
+.method-tag {
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+}
+
+.status-tag {
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+}
+
+.status-pago { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
+.status-em_separacao { background: rgba(0, 240, 255, 0.2); color: #38bdf8; }
+.status-aguardando_pagamento { background: rgba(234, 179, 8, 0.2); color: #facc15; }
+.status-expedido { background: rgba(168, 85, 247, 0.2); color: #c084fc; }
+
+.action-buttons-group {
+  display: flex;
+  gap: 6px;
+}
+
+.btn-table-action {
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-sm);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.btn-table-action:hover {
+  background: var(--accent-lime);
+  color: var(--text-dark);
+}
+
+.btn-table-action.dispatch {
+  background: rgba(0, 240, 255, 0.15);
+  color: var(--accent-cyan);
+}
+
+.btn-table-action.dispatch:hover {
+  background: var(--accent-cyan);
+  color: var(--text-dark);
+}
+
+/* Sellers Grid */
+.sellers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.seller-card {
+  padding: 20px;
+}
+
+.seller-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.seller-avatar {
+  font-size: 2rem;
+}
+
+.seller-code code {
+  color: var(--accent-cyan);
+  font-size: 0.8rem;
+}
+
+.seller-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.85rem;
+}
+
+.s-stat {
+  display: flex;
+  justify-content: space-between;
+  color: var(--text-secondary);
+}
+
+.s-stat.highlight {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border-subtle);
+}
+
+.comm-val {
+  color: var(--accent-lime);
+  font-size: 1.1rem;
+}
+
+/* Tab 4 Gerencia */
+.tab-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+.metric-summary-card {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+}
+
+.m-icon {
+  font-size: 2rem;
+  margin-bottom: 12px;
+}
+
+.m-title {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.m-val {
+  font-family: var(--font-heading);
+  font-size: 1.9rem;
+  font-weight: 900;
+  color: #fff;
+  margin: 6px 0 8px;
+}
+
+.m-growth {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.m-growth.positive {
+  color: var(--accent-lime);
+}
+
+@media (max-width: 900px) {
+  .tab-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}

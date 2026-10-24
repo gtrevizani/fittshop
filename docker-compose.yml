@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  # Database Service: PostgreSQL
+  postgres-db:
+    image: postgres:16-alpine
+    container_name: fittshop-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: fittshopdb
+      POSTGRES_USER: fittuser
+      POSTGRES_PASSWORD: fittpassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - fittshop_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fittuser -d fittshopdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend Service: Spring Boot 3 + Java 21
+  backend-api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: fittshop-backend
+    restart: unless-stopped
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/fittshopdb
+      SPRING_DATASOURCE_USERNAME: fittuser
+      SPRING_DATASOURCE_PASSWORD: fittpassword
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    ports:
+      - "8080:8080"
+
+  # Frontend Service: Angular 18+ Nginx
+  frontend-web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: fittshop-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend-api
+    ports:
+      - "4200:80"
+
+volumes:
+  fittshop_pg_data:
+    driver: local

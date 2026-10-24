@@ -1,0 +1,102 @@
+<section class="catalog-section" id="catalogo">
+  <div class="catalog-container">
+    <!-- Category & Filter Bar -->
+    <div class="catalog-header-bar">
+      <div class="catalog-title-box">
+        <span class="badge-lime">🔥 CATÁLOGO OFICIAL</span>
+        <h2>Produtos & Suplementos para Alta Carga</h2>
+      </div>
+
+      <!-- Categories Navigation -->
+      <div class="category-tabs">
+        <button 
+          *ngFor="let cat of categories"
+          class="cat-tab-btn"
+          [class.active]="selectedCategory === cat"
+          (click)="selectedCategory = cat">
+          {{ cat }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Active Filters Feedback -->
+    <div class="active-filter-strip" *ngIf="selectedGoal !== 'TODOS' || searchQuery">
+      <span>Filtrando por:</span>
+      <span *ngIf="selectedGoal !== 'TODOS'" class="filter-chip">
+        Objetivo: {{ selectedGoal }}
+        <button (click)="selectedGoal = 'TODOS'">✕</button>
+      </span>
+      <span *ngIf="searchQuery" class="filter-chip">
+        Busca: "{{ searchQuery }}"
+        <button (click)="searchQuery = ''">✕</button>
+      </span>
+    </div>
+
+    <!-- Product Grid -->
+    <div class="product-grid" *ngIf="filteredProducts().length > 0; else noProducts">
+      <div *ngFor="let prod of filteredProducts()" class="product-card card-glass">
+        <!-- Badges -->
+        <div class="card-badges">
+          <span class="badge-tag" [ngClass]="'tag-' + prod.category.toLowerCase()">{{ prod.category }}</span>
+          <span class="badge-stock" [class.low-stock]="prod.stockQuantity <= prod.minStockThreshold">
+            {{ prod.stockQuantity > prod.minStockThreshold ? 'Em Estoque' : 'Últimas ' + prod.stockQuantity + ' unid.' }}
+          </span>
+        </div>
+
+        <!-- Product Image -->
+        <div class="img-wrapper">
+          <img [src]="prod.imageUrl" [alt]="prod.name" class="product-img" loading="lazy">
+        </div>
+
+        <!-- Product Details -->
+        <div class="card-body">
+          <span class="prod-sku">SKU: {{ prod.sku }}</span>
+          <h3 class="prod-name">{{ prod.name }}</h3>
+          <p class="prod-desc">{{ prod.description }}</p>
+
+          <!-- Nutritional Accordion Toggle -->
+          <div class="nutritional-toggle-box" *ngIf="prod.nutritionalInfo">
+            <button class="nutri-btn" (click)="toggleNutritional(prod.id)">
+              <span>🧪 {{ expandedNutritionalId === prod.id ? 'Ocultar' : 'Ver' }} Ficha Técnica</span>
+              <span>{{ expandedNutritionalId === prod.id ? '▲' : '▼' }}</span>
+            </button>
+            <div class="nutri-drawer" *ngIf="expandedNutritionalId === prod.id">
+              <p>{{ prod.nutritionalInfo }}</p>
+              <div class="lote-info" *ngIf="prod.batchCode">
+                <span>Lote: {{ prod.batchCode }}</span>
+                <span>Val: {{ prod.expirationDate }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Price & Add Action -->
+          <div class="card-footer">
+            <div class="price-box">
+              <span class="price-val">R$ {{ prod.price.toFixed(2) }}</span>
+              <span class="installments">até 3x de R$ {{ (prod.price / 3).toFixed(2) }} sem juros</span>
+            </div>
+
+            <button class="btn-primary add-btn" (click)="addToCart(prod)">
+              <span>Adicionar</span>
+              <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <ng-template #noProducts>
+      <div class="empty-state card-glass">
+        <span class="empty-icon">🔍</span>
+        <h3>Nenhum produto encontrado</h3>
+        <p>Tente ajustar a busca ou limpar os filtros de objetivo de treino.</p>
+        <button class="btn-secondary" (click)="selectedCategory = 'TODOS'; selectedGoal = 'TODOS'; searchQuery = ''">
+          Limpar Filtros
+        </button>
+      </div>
+    </ng-template>
+  </div>
+</section>

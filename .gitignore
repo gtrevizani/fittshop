@@ -1,0 +1,27 @@
+# Maven & Java
+backend/target/
+backend/.mvn/wrapper/maven-wrapper.jar
+*.class
+.factorypath
+.project
+.settings
+.classpath
+
+# Node & Angular
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+frontend/package-lock.json.bak
+
+# IDE & OS
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db
+*.log
+
+# Environment & Secrets
+.env
+*.pem
+*.key

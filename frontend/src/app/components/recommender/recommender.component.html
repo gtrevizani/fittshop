@@ -1,0 +1,139 @@
+<div class="modal-overlay" (click)="closeEvent.emit()">
+  <div class="recommender-modal" (click)="$event.stopPropagation()">
+    <!-- Header -->
+    <div class="modal-header">
+      <div class="header-title-box">
+        <span class="badge-lime">✨ ALGORITMO NUTRIFIT IA</span>
+        <h2>Consultor Nutricional & Stack Inteligente</h2>
+        <p>Informe suas métricas corporais e nosso algoritmo calculará as dosagens ideais de suplementação e treino.</p>
+      </div>
+      <button class="close-btn" (click)="closeEvent.emit()" aria-label="Fechar modal">✕</button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="modal-body">
+      <!-- Input Form -->
+      <div class="form-grid">
+        <!-- Goal -->
+        <div class="form-group full-width">
+          <label>Objetivo Principal de Treino</label>
+          <div class="goal-pills">
+            <button 
+              type="button" 
+              class="pill-btn" 
+              [class.active]="goal === 'HIPERTROFIA'"
+              (click)="goal = 'HIPERTROFIA'">
+              💪 Hipertrofia (Massa)
+            </button>
+            <button 
+              type="button" 
+              class="pill-btn" 
+              [class.active]="goal === 'DEFINICAO'"
+              (click)="goal = 'DEFINICAO'">
+              🔥 Queima & Definição
+            </button>
+            <button 
+              type="button" 
+              class="pill-btn" 
+              [class.active]="goal === 'FORCA_POWERLIFTING'"
+              (click)="goal = 'FORCA_POWERLIFTING'">
+              ⚡ Força & Carga
+            </button>
+            <button 
+              type="button" 
+              class="pill-btn" 
+              [class.active]="goal === 'RESISTENCIA_CARDIO'"
+              (click)="goal = 'RESISTENCIA_CARDIO'">
+              🏃 Resistência & Cardio
+            </button>
+          </div>
+        </div>
+
+        <!-- Weight -->
+        <div class="form-group">
+          <label>Peso Corporal: <strong>{{ weightKg }} kg</strong></label>
+          <input type="range" min="45" max="140" step="1" [(ngModel)]="weightKg">
+        </div>
+
+        <!-- Height -->
+        <div class="form-group">
+          <label>Altura: <strong>{{ heightMeters.toFixed(2) }} m</strong></label>
+          <input type="range" min="1.40" max="2.15" step="0.01" [(ngModel)]="heightMeters">
+        </div>
+
+        <!-- Weekly Workouts -->
+        <div class="form-group">
+          <label>Treinos por Semana: <strong>{{ weeklyWorkouts }}x</strong></label>
+          <input type="range" min="1" max="7" step="1" [(ngModel)]="weeklyWorkouts">
+        </div>
+
+        <!-- Experience Level -->
+        <div class="form-group">
+          <label>Experiência de Treino</label>
+          <select [(ngModel)]="experienceLevel">
+            <option value="INICIANTE">Iniciante (menos de 6 meses)</option>
+            <option value="INTERMEDIARIO">Intermediário (6 meses a 2 anos)</option>
+            <option value="AVANCADO">Avançado (mais de 2 anos)</option>
+            <option value="ATLETA">Atleta Competidor</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Action Button -->
+      <div class="calc-action">
+        <button class="btn-primary calculate-btn" (click)="calculate()" [disabled]="isCalculating">
+          <span *ngIf="!isCalculating">⚡ Calcular Meu Plano Nutricional Personalizado</span>
+          <span *ngIf="isCalculating">Processando com NutriFit Engine...</span>
+        </button>
+      </div>
+
+      <!-- Result Card -->
+      <div *ngIf="result" class="result-box card-glass">
+        <div class="result-header">
+          <div class="metric-chip">
+            <span class="metric-val">{{ result.dailyProteinGrams }}g</span>
+            <span class="metric-sub">Proteína Diária Recomendada</span>
+          </div>
+          <div class="metric-chip">
+            <span class="metric-val">{{ result.dailyCreatineGrams }}g</span>
+            <span class="metric-sub">Creatina Diária (Padrão Ouro)</span>
+          </div>
+          <div class="metric-chip">
+            <span class="metric-val">{{ result.estimatedWaterLiters }}L</span>
+            <span class="metric-sub">Hidratação Mínima / Dia</span>
+          </div>
+        </div>
+
+        <p class="rationale-text">
+          💡 <strong>Diagnóstico do Algoritmo:</strong> {{ result.rationale }}
+        </p>
+
+        <!-- Recommended Products Grid -->
+        <div class="recommended-products-section">
+          <h4>Produtos Sinérgicos para seu Combo (15% OFF Aplicado):</h4>
+          <div class="rec-products-grid">
+            <div *ngFor="let prod of result.recommendedProducts" class="rec-prod-card">
+              <img [src]="prod.imageUrl" [alt]="prod.name" class="rec-prod-img">
+              <div class="rec-prod-info">
+                <span class="rec-prod-name">{{ prod.name }}</span>
+                <span class="rec-prod-price">R$ {{ prod.price.toFixed(2) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pricing Summary & Combo CTA -->
+        <div class="combo-cta-bar">
+          <div class="combo-price-block">
+            <span class="old-price">De R$ {{ result.regularTotalPrice.toFixed(2) }}</span>
+            <span class="new-price">Por R$ {{ result.comboDiscountedPrice.toFixed(2) }}</span>
+            <span class="savings-badge">Você economiza R$ {{ result.totalSavings.toFixed(2) }} (-15%)</span>
+          </div>
+          <button class="btn-primary combo-buy-btn" (click)="addComboToCart()">
+            <span>🛒 Adicionar Combo Completo à Sacola</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

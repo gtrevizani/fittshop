@@ -1,0 +1,89 @@
+<div class="fitt-app-layout">
+  <!-- Sticky Header -->
+  <app-header 
+    (searchEvent)="onSearch($event)"
+    (openRecommenderEvent)="showRecommenderModal = true"
+    (toggleBackofficeEvent)="toggleBackoffice()">
+  </app-header>
+
+  <main>
+    <!-- Backoffice Panel when toggled or staff mode -->
+    <app-backoffice *ngIf="showBackoffice || authService.isStaff()"></app-backoffice>
+
+    <!-- Main Store Front for Athletes -->
+    <div *ngIf="!authService.isStaff() || showBackoffice">
+      <!-- Hero Banner -->
+      <app-hero 
+        (selectGoalEvent)="onGoalSelected($event)"
+        (openRecommenderEvent)="showRecommenderModal = true">
+      </app-hero>
+
+      <!-- Sports Catalog -->
+      <app-catalog 
+        [selectedGoal]="selectedGoal" 
+        [searchQuery]="searchQuery">
+      </app-catalog>
+    </div>
+  </main>
+
+  <!-- Recommender Modal -->
+  <app-recommender 
+    *ngIf="showRecommenderModal"
+    (closeEvent)="showRecommenderModal = false">
+  </app-recommender>
+
+  <!-- Reactive Cart Drawer -->
+  <app-cart-drawer></app-cart-drawer>
+
+  <!-- Checkout & Atomic Lease Modal -->
+  <app-checkout-modal *ngIf="cartService.isCheckoutModalOpen()"></app-checkout-modal>
+
+  <!-- Modern Fitness Footer -->
+  <footer class="fitt-footer">
+    <div class="footer-container">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <div class="logo-box">
+            <img src="assets/logo.jpg" alt="FittShop Logo" class="footer-logo">
+            <span class="f-brand">FITT<span>SHOP</span></span>
+          </div>
+          <p>A loja online oficial dos atletas de alta performance. Suplementos 100% puros, vestuário sem costura e travas atômicas de estoque.</p>
+        </div>
+
+        <div class="footer-links">
+          <h4>Navegação</h4>
+          <ul>
+            <li><a href="#catalogo">Catálogo Completo</a></li>
+            <li><a href="#" (click)="$event.preventDefault(); showRecommenderModal = true">Consultor NutriFit IA</a></li>
+            <li><a href="#" (click)="$event.preventDefault(); cartService.isCartOpen.set(true)">Minha Sacola</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-links">
+          <h4>Políticas & Segurança</h4>
+          <ul>
+            <li><a href="#">Laudos de Pureza (Creapure®)</a></li>
+            <li><a href="#">Diretrizes Sanitárias ANVISA</a></li>
+            <li><a href="#">Política de Frete Grátis</a></li>
+            <li><a href="#">Devoluções e Estornos</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-links">
+          <h4>DevSecOps & Arquitetura</h4>
+          <ul>
+            <li><span class="tech-tag">Java 21 LTS</span></li>
+            <li><span class="tech-tag">Spring Boot 3.3</span></li>
+            <li><span class="tech-tag">Angular 18+ Signals</span></li>
+            <li><span class="tech-tag">Agent Master DevSecOps</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>&copy; 2026 FittShop Suplementos & Artigos Esportivos Ltda. Todos os direitos reservados. CNPJ: 12.345.678/0001-90.</p>
+        <p class="devsecops-badge">⚡ Desenvolvido e Auditado sob o Protocolo Canônico Agent Master DevSecOps v5.2.0 Enterprise</p>
+      </div>
+    </div>
+  </footer>
+</div>

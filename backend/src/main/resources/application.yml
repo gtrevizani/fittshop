@@ -1,0 +1,47 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: fittshop-backend
+  datasource:
+    url: jdbc:h2:mem:fittshopdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
+    driverClassName: org.h2.Driver
+    username: sa
+    password: 
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: method
+
+fittshop:
+  security:
+    jwt:
+      secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+      expiration-ms: 3600000 # 1 hora
+  business:
+    stock-lease-ttl-seconds: 900 # 15 minutos
+    fittcoins-points-rate: 0.10 # R$ 10 = 1 ponto
+    fittcoins-redemption-value: 0.50 # 1 ponto = R$ 0.50
+    fittcoins-max-discount-percentage: 0.20 # Max 20% do carrinho
+    combo-discount-rate: 0.15 # 15% OFF em combos
+    free-shipping-threshold-sudeste: 199.00
+    free-shipping-threshold-outros: 299.00

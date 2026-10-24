@@ -1,0 +1,213 @@
+<div class="modal-overlay" (click)="close()">
+  <div class="checkout-modal" (click)="$event.stopPropagation()">
+    <!-- Header -->
+    <div class="modal-header">
+      <div class="header-title-box">
+        <span class="badge-lime">🔒 CHECKOUT SEGURO FITTSHOP</span>
+        <h2>{{ step === 'FORM' ? 'Finalização do Pedido & Reserva' : 'Pedido Confirmado — Aguardando Pagamento' }}</h2>
+      </div>
+      <button class="close-btn" (click)="close()" aria-label="Fechar checkout">✕</button>
+    </div>
+
+    <!-- Step 1: Form -->
+    <div class="modal-body" *ngIf="step === 'FORM'">
+      <!-- Timer Strip -->
+      <div class="lease-timer-strip">
+        <div class="timer-info">
+          <span class="timer-icon">⏳</span>
+          <div>
+            <strong>Reserva Temporária de Estoque Ativa:</strong>
+            <span>Seus produtos estão travados por <strong>{{ formatTime(remainingSeconds) }}</strong> minutos.</span>
+          </div>
+        </div>
+        <span class="badge-cyan">TTL 15 Minutos</span>
+      </div>
+
+      <div class="checkout-form-grid">
+        <!-- Customer Details -->
+        <div class="form-section">
+          <h3>1. Dados do Atleta</h3>
+          <div class="input-row">
+            <div class="form-field">
+              <label>Nome Completo</label>
+              <input type="text" [(ngModel)]="customerName">
+            </div>
+            <div class="form-field">
+              <label>E-mail</label>
+              <input type="email" [(ngModel)]="customerEmail">
+            </div>
+          </div>
+          <div class="input-row">
+            <div class="form-field">
+              <label>CPF</label>
+              <input type="text" [(ngModel)]="customerCpf">
+            </div>
+            <div class="form-field">
+              <label>Telefone / WhatsApp</label>
+              <input type="text" [(ngModel)]="customerPhone">
+            </div>
+          </div>
+        </div>
+
+        <!-- Delivery -->
+        <div class="form-section">
+          <h3>2. Entrega dos Suplementos</h3>
+          <div class="input-row">
+            <div class="form-field">
+              <label>CEP de Destino</label>
+              <input type="text" [(ngModel)]="deliveryZipCode">
+            </div>
+            <div class="form-field">
+              <label>Código da Vendedora (Opcional)</label>
+              <input type="text" placeholder="Ex: CAMILA04" [(ngModel)]="sellerCode">
+            </div>
+          </div>
+          <div class="form-field">
+            <label>Endereço Completo</label>
+            <input type="text" [(ngModel)]="deliveryAddress">
+          </div>
+        </div>
+
+        <!-- Payment Selection -->
+        <div class="form-section">
+          <h3>3. Forma de Pagamento</h3>
+          <div class="payment-options-grid">
+            <label class="pay-option" [class.selected]="paymentMethod === 'PIX'">
+              <input type="radio" name="pay" value="PIX" [(ngModel)]="paymentMethod">
+              <div class="pay-content">
+                <span class="pay-icon">⚡</span>
+                <span class="pay-title">PIX Instantâneo</span>
+                <span class="pay-badge">Aprovação em 5s</span>
+              </div>
+            </label>
+
+            <label class="pay-option" [class.selected]="paymentMethod === 'CREDIT_CARD'">
+              <input type="radio" name="pay" value="CREDIT_CARD" [(ngModel)]="paymentMethod">
+              <div class="pay-content">
+                <span class="pay-icon">💳</span>
+                <span class="pay-title">Cartão de Crédito</span>
+                <span class="pay-badge">Até 10x s/ juros</span>
+              </div>
+            </label>
+
+            <label class="pay-option" [class.selected]="paymentMethod === 'BOLETO'">
+              <input type="radio" name="pay" value="BOLETO" [(ngModel)]="paymentMethod">
+              <div class="pay-content">
+                <span class="pay-icon">📄</span>
+                <span class="pay-title">Boleto Bancário</span>
+                <span class="pay-badge">1 a 2 dias</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Summary & Button -->
+        <div class="checkout-totals-card card-glass">
+          <div class="totals-row">
+            <span>Subtotal:</span>
+            <span>R$ {{ cartService.subtotal().toFixed(2) }}</span>
+          </div>
+          <div class="totals-row" *ngIf="cartService.totalDiscount() > 0">
+            <span>Descontos:</span>
+            <span class="discount-val">- R$ {{ cartService.totalDiscount().toFixed(2) }}</span>
+          </div>
+          <div class="totals-row">
+            <span>Frete:</span>
+            <span>{{ cartService.freightAmount() === 0 ? 'Grátis' : 'R$ ' + cartService.freightAmount().toFixed(2) }}</span>
+          </div>
+          <div class="totals-row total-highlight">
+            <span>Total a Pagar:</span>
+            <span class="final-price">R$ {{ cartService.finalTotal().toFixed(2) }}</span>
+          </div>
+
+          <button class="btn-primary confirm-order-btn" (click)="submitOrder()" [disabled]="isSubmitting">
+            <span *ngIf="!isSubmitting">Gerar Pedido & Travar Estoque</span>
+            <span *ngIf="isSubmitting">Conectando ao Gateway e Alocando Reserva...</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: Confirmation / Payment -->
+    <div class="modal-body confirmation-body" *ngIf="step === 'CONFIRMATION' && orderResult">
+      <div class="confirmation-badge-wrapper">
+        <span class="conf-icon">{{ orderResult.status === 'PAGO' ? '✅' : '⏳' }}</span>
+        <h3>Pedido {{ orderResult.orderNumber }}</h3>
+        <span class="order-status-chip" [class.paid]="orderResult.status === 'PAGO'">
+          Status FSM: {{ orderResult.status }}
+        </span>
+        <p class="conf-msg">{{ orderResult.message }}</p>
+      </div>
+
+      <!-- Live FSM Timeline -->
+      <div class="fsm-timeline">
+        <div class="timeline-step done">
+          <div class="step-circle">1</div>
+          <span>Criado</span>
+        </div>
+        <div class="timeline-line active"></div>
+        <div class="timeline-step" [class.done]="orderResult.status === 'PAGO'">
+          <div class="step-circle">2</div>
+          <span>{{ orderResult.status === 'PAGO' ? 'Pago' : 'Aguardando Pagamento' }}</span>
+        </div>
+        <div class="timeline-line" [class.active]="orderResult.status === 'PAGO'"></div>
+        <div class="timeline-step">
+          <div class="step-circle">3</div>
+          <span>Separação Estoquista</span>
+        </div>
+        <div class="timeline-line"></div>
+        <div class="timeline-step">
+          <div class="step-circle">4</div>
+          <span>Expedido</span>
+        </div>
+      </div>
+
+      <!-- PIX Box if not paid -->
+      <div *ngIf="orderResult.status !== 'PAGO' && orderResult.paymentMethod === 'PIX'" class="pix-payment-box card-glass">
+        <h4>Escaneie o QR Code PIX com o app do seu banco:</h4>
+
+        <div class="pix-qr-container">
+          <img [src]="orderResult.pixQrCodeBase64 || 'assets/logo.jpg'" alt="QR Code PIX" class="pix-qr-img">
+        </div>
+
+        <div class="pix-copy-paste-group">
+          <label>Chave Copia e Cola:</label>
+          <div class="input-with-button">
+            <input type="text" [value]="orderResult.pixCopiaECola" readonly>
+            <button class="btn-secondary copy-btn" (click)="copyPixPayload()">
+              {{ copiedPix ? 'Copiado! ✓' : 'Copiar' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Webhook Simulation for Dev Testing -->
+        <div class="dev-simulation-box">
+          <span class="dev-label">🧪 Modo de Demonstração DevSecOps:</span>
+          <button class="btn-primary sim-btn" (click)="simulatePaymentWebhook()">
+            Simular Webhook de Aprovação de Pagamento (Bacen / Gateway)
+          </button>
+        </div>
+      </div>
+
+      <!-- Order Details Summary -->
+      <div class="order-details-summary card-glass">
+        <div class="details-col">
+          <span>Total Pago:</span>
+          <strong>R$ {{ orderResult.totalAmount.toFixed(2) }}</strong>
+        </div>
+        <div class="details-col">
+          <span>Reserva UUID:</span>
+          <code>{{ orderResult.reservationUuid }}</code>
+        </div>
+        <div class="details-col">
+          <span>FittCoins Ganhos:</span>
+          <strong class="fittcoins-badge">+{{ orderResult.fittCoinsEarned }} Pontos</strong>
+        </div>
+      </div>
+
+      <div class="modal-footer-btns">
+        <button class="btn-secondary" (click)="close()">Continuar Comprando</button>
+      </div>
+    </div>
+  </div>
+</div>
