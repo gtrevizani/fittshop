@@ -79,7 +79,35 @@ export class CartService {
     return Math.floor(this.finalTotal() * 0.10);
   });
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+    this.loadFromStorage();
+  }
+
+  private loadFromStorage(): void {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        const saved = localStorage.getItem('fittshop_cart_items');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            this.items.set(parsed);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Erro ao carregar carrinho local:', e);
+    }
+  }
+
+  private saveToStorage(): void {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.setItem('fittshop_cart_items', JSON.stringify(this.items()));
+      }
+    } catch (e) {
+      console.warn('Erro ao salvar carrinho local:', e);
+    }
+  }
 
   addItem(product: Product, quantity = 1): void {
     const current = this.items();
@@ -92,16 +120,29 @@ export class CartService {
     } else {
       this.items.set([...current, { product, quantity }]);
     }
+    this.saveToStorage();
     this.isCartOpen.set(true);
   }
 
   addCombo(products: Product[]): void {
-    products.forEach(p => this.addItem(p, 1));
+    products.forEach(p => {
+      const current = this.items();
+      const existing = current.find(i => i.product.id === p.id);
+      if (existing) {
+        this.items.set(
+          current.map(i => i.product.id === p.id ? { ...i, quantity: i.quantity + 1 } : i)
+        );
+      } else {
+        this.items.set([...current, { product: p, quantity: 1 }]);
+      }
+    });
+    this.saveToStorage();
     this.isCartOpen.set(true);
   }
 
   removeItem(productId: number): void {
     this.items.set(this.items().filter(i => i.product.id !== productId));
+    this.saveToStorage();
   }
 
   updateQuantity(productId: number, quantity: number): void {
@@ -112,6 +153,7 @@ export class CartService {
     this.items.set(
       this.items().map(i => i.product.id === productId ? { ...i, quantity } : i)
     );
+    this.saveToStorage();
   }
 
   clearCart(): void {
@@ -119,6 +161,7 @@ export class CartService {
     this.couponCode.set('');
     this.fittCoinsToRedeem.set(0);
     this.freightQuote.set(null);
+    this.saveToStorage();
   }
 
   applyCoupon(code: string): boolean {

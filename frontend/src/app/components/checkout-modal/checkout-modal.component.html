@@ -41,6 +41,7 @@
             <div class="form-field">
               <label>CPF</label>
               <input type="text" [(ngModel)]="customerCpf">
+              <small *ngIf="cpfErrorMessage" style="color: #ff4d4f; font-size: 0.75rem; margin-top: 4px;">{{ cpfErrorMessage }}</small>
             </div>
             <div class="form-field">
               <label>Telefone / WhatsApp</label>
@@ -55,7 +56,9 @@
           <div class="input-row">
             <div class="form-field">
               <label>CEP de Destino</label>
-              <input type="text" [(ngModel)]="deliveryZipCode">
+              <input type="text" [(ngModel)]="deliveryZipCode" (input)="onCepChange()" placeholder="Ex: 01310-100">
+              <small *ngIf="isSearchingCep" style="color: #ccff00; font-size: 0.75rem; margin-top: 4px;">⚡ Buscando endereço via ViaCEP...</small>
+              <small *ngIf="cepErrorMessage" style="color: #ff4d4f; font-size: 0.75rem; margin-top: 4px;">{{ cepErrorMessage }}</small>
             </div>
             <div class="form-field">
               <label>Código da Vendedora (Opcional)</label>

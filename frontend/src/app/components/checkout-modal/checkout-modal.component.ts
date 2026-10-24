@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { CartService } from '../../services/cart.service';
 import { CheckoutRequestPayload, CheckoutResult } from '../../models/cart.model';
 
+import { HttpClient } from '@angular/common/http';
+
 @Component({
   selector: 'app-checkout-modal',
   standalone: true,
@@ -24,6 +26,9 @@ export class CheckoutModalComponent implements OnInit, OnDestroy {
   sellerCode = '';
 
   isSubmitting = false;
+  isSearchingCep = false;
+  cepErrorMessage = '';
+  cpfErrorMessage = '';
   orderResult: CheckoutResult | null = null;
   copiedPix = false;
 
@@ -31,7 +36,10 @@ export class CheckoutModalComponent implements OnInit, OnDestroy {
   remainingSeconds = 900;
   timerInterval: any;
 
-  constructor(public cartService: CartService) {}
+  constructor(
+    public cartService: CartService,
+    private http: HttpClient
+  ) {}
 
   ngOnInit(): void {
     this.startCountdown();
@@ -56,7 +64,49 @@ export class CheckoutModalComponent implements OnInit, OnDestroy {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   }
 
+  onCepChange(): void {
+    const cleanCep = this.deliveryZipCode.replace(/\D/g, '');
+    if (cleanCep.length === 8) {
+      this.isSearchingCep = true;
+      this.cepErrorMessage = '';
+      this.http.get<any>(`https://viacep.com.br/ws/${cleanCep}/json/`).subscribe({
+        next: (data) => {
+          this.isSearchingCep = false;
+          if (data && !data.erro) {
+            this.deliveryAddress = `${data.logradouro}, nº  - ${data.bairro}, ${data.localidade} - ${data.uf}`;
+          } else {
+            this.cepErrorMessage = 'CEP não encontrado. Preencha o endereço manualmente.';
+          }
+        },
+        error: () => {
+          this.isSearchingCep = false;
+        }
+      });
+    }
+  }
+
+  validateCpf(cpf: string): boolean {
+    const clean = cpf.replace(/\D/g, '');
+    if (clean.length !== 11 || /^(\d)\1{10}$/.test(clean)) return false;
+    let sum = 0, rest;
+    for (let i = 1; i <= 9; i++) sum += parseInt(clean.substring(i - 1, i)) * (11 - i);
+    rest = (sum * 10) % 11;
+    if (rest === 10 || rest === 11) rest = 0;
+    if (rest !== parseInt(clean.substring(9, 10))) return false;
+    sum = 0;
+    for (let i = 1; i <= 10; i++) sum += parseInt(clean.substring(i - 1, i)) * (12 - i);
+    rest = (sum * 10) % 11;
+    if (rest === 10 || rest === 11) rest = 0;
+    return rest === parseInt(clean.substring(10, 11));
+  }
+
   submitOrder(): void {
+    this.cpfErrorMessage = '';
+    const cleanCpf = this.customerCpf.replace(/\D/g, '');
+    if (cleanCpf.length === 11 && !this.validateCpf(this.customerCpf)) {
+      this.cpfErrorMessage = 'CPF inválido. Verifique os dígitos digitados.';
+      return;
+    }
     this.isSubmitting = true;
 
     const payload: CheckoutRequestPayload = {
