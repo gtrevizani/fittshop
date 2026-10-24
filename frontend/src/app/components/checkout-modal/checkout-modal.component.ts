@@ -2,9 +2,10 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CartService } from '../../services/cart.service';
+import { AuthService } from '../../services/auth.service';
 import { CheckoutRequestPayload, CheckoutResult } from '../../models/cart.model';
-
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-checkout-modal',
@@ -33,22 +34,31 @@ export class CheckoutModalComponent implements OnInit, OnDestroy {
   warmingUpNotice = false;
   orderResult: CheckoutResult | null = null;
   copiedPix = false;
+  isCheckingPayment = false;
 
   // 15-minute countdown timer
   remainingSeconds = 900;
   timerInterval: any;
+  pollingInterval: any;
 
   constructor(
     public cartService: CartService,
+    public authService: AuthService,
     private http: HttpClient
   ) {}
 
   ngOnInit(): void {
+    const user = this.authService.currentUser();
+    if (user) {
+      this.customerName = user.name;
+      this.customerEmail = user.email;
+    }
     this.startCountdown();
   }
 
   ngOnDestroy(): void {
     if (this.timerInterval) clearInterval(this.timerInterval);
+    if (this.pollingInterval) clearInterval(this.pollingInterval);
   }
 
   startCountdown(): void {
@@ -145,6 +155,7 @@ export class CheckoutModalComponent implements OnInit, OnDestroy {
         this.isSubmitting = false;
         this.warmingUpNotice = false;
         this.cartService.clearCart();
+        this.startPaymentPolling();
       },
       error: (err) => {
         clearTimeout(warmTimer);
@@ -162,6 +173,37 @@ export class CheckoutModalComponent implements OnInit, OnDestroy {
     });
   }
 
+  startPaymentPolling(): void {
+    if (this.pollingInterval) clearInterval(this.pollingInterval);
+    if (!this.orderResult || this.orderResult.status === 'PAGO') return;
+
+    this.pollingInterval = setInterval(() => {
+      this.checkPaymentStatus();
+    }, 4000);
+  }
+
+  checkPaymentStatus(): void {
+    if (!this.orderResult || this.orderResult.status === 'PAGO') {
+      if (this.pollingInterval) clearInterval(this.pollingInterval);
+      return;
+    }
+
+    this.isCheckingPayment = true;
+    this.http.get<any>(`${environment.apiUrl}/orders/${this.orderResult.orderNumber}`).subscribe({
+      next: (order) => {
+        this.isCheckingPayment = false;
+        if (order && (order.status === 'PAGO' || order.status === 'EM_SEPARACAO' || order.status === 'EXPEDIDO' || order.status === 'ENTREGUE')) {
+          this.orderResult!.status = 'PAGO';
+          this.orderResult!.message = '🎉 Pagamento aprovado via PIX / Banco Central! Seu pedido já está sendo preparado pela equipe do galpão FittShop.';
+          if (this.pollingInterval) clearInterval(this.pollingInterval);
+        }
+      },
+      error: () => {
+        this.isCheckingPayment = false;
+      }
+    });
+  }
+
   copyPixPayload(): void {
     if (this.orderResult?.pixCopiaECola) {
       navigator.clipboard.writeText(this.orderResult.pixCopiaECola);
@@ -171,13 +213,20 @@ export class CheckoutModalComponent implements OnInit, OnDestroy {
   }
 
   simulatePaymentWebhook(): void {
-    if (this.orderResult) {
-      this.orderResult.status = 'PAGO';
-      this.orderResult.message = '🎉 Pagamento aprovado! Seu pedido já foi enviado para separação pelo Estoquista.';
-    }
+    if (!this.orderResult) return;
+    this.isCheckingPayment = true;
+    this.http.post<any>(`${environment.apiUrl}/checkout/confirm/${this.orderResult.orderNumber}`, {}).subscribe({
+      next: () => {
+        this.checkPaymentStatus();
+      },
+      error: () => {
+        this.isCheckingPayment = false;
+      }
+    });
   }
 
   close(): void {
+    if (this.pollingInterval) clearInterval(this.pollingInterval);
     this.cartService.isCheckoutModalOpen.set(false);
   }
 }

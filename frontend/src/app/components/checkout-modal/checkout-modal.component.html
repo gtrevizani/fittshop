@@ -192,11 +192,22 @@
           </div>
         </div>
 
-        <!-- Webhook Simulation for Dev Testing -->
-        <div class="dev-simulation-box">
-          <span class="dev-label">🧪 Modo de Demonstração DevSecOps:</span>
-          <button class="btn-primary sim-btn" (click)="simulatePaymentWebhook()">
-            Simular Webhook de Aprovação de Pagamento (Bacen / Gateway)
+        <!-- Polling Status Indicator -->
+        <div style="margin-top: 14px; padding: 10px 14px; background: rgba(0, 240, 255, 0.05); border: 1px solid rgba(0, 240, 255, 0.2); border-radius: 8px; display: flex; align-items: center; justify-content: space-between;">
+          <span style="font-size: 0.8rem; color: #ddd; display: flex; align-items: center; gap: 8px;">
+            <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #00f0ff;"></span>
+            Monitorando compensação do Banco Central a cada 4s...
+          </span>
+          <button class="btn-secondary" style="font-size: 0.75rem; padding: 4px 10px;" (click)="checkPaymentStatus()" [disabled]="isCheckingPayment">
+            {{ isCheckingPayment ? 'Checando...' : 'Verificar Agora' }}
+          </button>
+        </div>
+
+        <!-- Webhook Simulation for Dev Testing / Staff Approval -->
+        <div class="dev-simulation-box" style="margin-top: 14px;">
+          <span class="dev-label">⚡ Gateway de Pagamento / Baixa Automática:</span>
+          <button class="btn-primary sim-btn" (click)="simulatePaymentWebhook()" [disabled]="isCheckingPayment">
+            {{ isCheckingPayment ? 'Notificando Gateway...' : 'Disparar Confirmação Oficial de Pagamento (API)' }}
           </button>
         </div>
       </div>
