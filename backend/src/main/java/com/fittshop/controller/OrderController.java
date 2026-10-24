@@ -19,10 +19,14 @@ public class OrderController {
 
     private final OrderRepository orderRepository;
     private final CheckoutService checkoutService;
+    private final com.fittshop.service.fiscal.FiscalInvoiceService fiscalInvoiceService;
 
-    public OrderController(OrderRepository orderRepository, CheckoutService checkoutService) {
+    public OrderController(OrderRepository orderRepository,
+                           CheckoutService checkoutService,
+                           com.fittshop.service.fiscal.FiscalInvoiceService fiscalInvoiceService) {
         this.orderRepository = orderRepository;
         this.checkoutService = checkoutService;
+        this.fiscalInvoiceService = fiscalInvoiceService;
     }
 
     @GetMapping
@@ -59,5 +63,11 @@ public class OrderController {
     @Operation(summary = "Lista histórico de notificações transacionais (WhatsApp e E-mail) do pedido")
     public ResponseEntity<List<com.fittshop.service.notification.NotificationService.NotificationLog>> getOrderNotifications(@PathVariable String orderNumber) {
         return ResponseEntity.ok(checkoutService.getNotificationService().getNotificationsForOrder(orderNumber));
+    }
+
+    @GetMapping("/{orderNumber}/danfe")
+    @Operation(summary = "Gera e consulta o espelho DANFE / NF-e com chave SEFAZ de 44 dígitos")
+    public ResponseEntity<com.fittshop.domain.dto.DanfeDto> getOrderDanfe(@PathVariable String orderNumber) {
+        return ResponseEntity.ok(fiscalInvoiceService.generateDanfe(orderNumber));
     }
 }

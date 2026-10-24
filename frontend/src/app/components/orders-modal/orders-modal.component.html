@@ -73,11 +73,128 @@
               <span>Método: <strong>{{ order.paymentMethod }}</strong></span>
               <span *ngIf="order.fittCoinsEarned" class="coins-earned">+{{ order.fittCoinsEarned }} FittCoins acumulados</span>
             </div>
-            <div class="order-total">
-              <span class="total-label">Total Pago:</span>
-              <span class="total-value">R$ {{ order.totalAmount.toFixed(2) }}</span>
+            <div class="footer-actions-group">
+              <button class="btn-danfe" (click)="openDanfe(order.orderNumber)" *ngIf="order.status !== 'AGUARDANDO_PAGAMENTO' && order.status !== 'CANCELADO'">
+                📄 Espelho DANFE / NF-e
+              </button>
+              <div class="order-total">
+                <span class="total-label">Total Pago:</span>
+                <span class="total-value">R$ {{ order.totalAmount.toFixed(2) }}</span>
+              </div>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DANFE / NF-e Modal Overlay -->
+  <div class="danfe-modal-overlay" *ngIf="selectedDanfe || isLoadingDanfe || danfeError" (click)="closeDanfe()">
+    <div class="danfe-modal card-glass" (click)="$event.stopPropagation()">
+      <div class="danfe-header">
+        <div class="danfe-title-box">
+          <span class="danfe-badge-sefaz">SEFAZ - MODELO 55</span>
+          <h3>Documento Auxiliar da Nota Fiscal Eletrônica (DANFE)</h3>
+          <p class="danfe-sub">FittShop Suplementos Nutricionais LTDA — CNPJ 48.234.901/0001-88</p>
+        </div>
+        <div class="danfe-header-buttons">
+          <button class="btn-print" (click)="printDanfe()" *ngIf="selectedDanfe">🖨️ Imprimir DANFE</button>
+          <button class="close-btn" (click)="closeDanfe()">✕</button>
+        </div>
+      </div>
+
+      <div class="danfe-body" *ngIf="isLoadingDanfe">
+        <div class="spinner"></div>
+        <p>Consultando espelho fiscal na SEFAZ...</p>
+      </div>
+
+      <div class="danfe-body error-box" *ngIf="danfeError">
+        <p>⚠️ {{ danfeError }}</p>
+      </div>
+
+      <div class="danfe-body" *ngIf="selectedDanfe && !isLoadingDanfe">
+        <!-- Chave de Acesso -->
+        <div class="access-key-box">
+          <span class="key-label">CHAVE DE ACESSO (SEFAZ - 44 DÍGITOS OFICIAIS):</span>
+          <div class="key-row">
+            <code class="access-key-text">{{ selectedDanfe.formattedAccessKey }}</code>
+            <button class="copy-btn" (click)="copyAccessKey(selectedDanfe.accessKey)">
+              {{ copiedKey ? '✓ Copiado!' : 'Copiar' }}
+            </button>
+          </div>
+          <div class="protocol-row">
+            <span>Protocolo de Autorização: <strong>{{ selectedDanfe.protocolNumber }}</strong></span>
+            <span>Data de Emissão: <strong>{{ selectedDanfe.authorizationDate | date:'dd/MM/yyyy HH:mm:ss' }}</strong></span>
+            <span>Natureza: <strong>{{ selectedDanfe.natureOfOperation }} (CFOP {{ selectedDanfe.cfop }})</strong></span>
+          </div>
+        </div>
+
+        <!-- Dados Emitente & Destinatario -->
+        <div class="entities-grid">
+          <div class="entity-card">
+            <h4>EMITENTE</h4>
+            <p><strong>{{ selectedDanfe.emitterName }}</strong></p>
+            <p>CNPJ: {{ selectedDanfe.emitterCnpj }} | IE: {{ selectedDanfe.emitterIe }}</p>
+            <p>{{ selectedDanfe.emitterAddress }}</p>
+          </div>
+          <div class="entity-card">
+            <h4>DESTINATÁRIO / CONSUMIDOR</h4>
+            <p><strong>{{ selectedDanfe.recipientName }}</strong></p>
+            <p>CPF: {{ selectedDanfe.recipientCpf }}</p>
+            <p>{{ selectedDanfe.recipientAddress }} — CEP {{ selectedDanfe.recipientZipCode }}</p>
+          </div>
+        </div>
+
+        <!-- Tabela de Produtos / Servicos -->
+        <div class="danfe-table-container">
+          <table class="danfe-table">
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Descrição dos Suplementos</th>
+                <th>NCM</th>
+                <th>CFOP</th>
+                <th>Qtd</th>
+                <th>Vlr Unit</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of selectedDanfe.items">
+                <td>{{ item.productCode }}</td>
+                <td>{{ item.description }}</td>
+                <td>{{ item.ncm }}</td>
+                <td>{{ item.cfop }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>R$ {{ item.unitPrice.toFixed(2) }}</td>
+                <td><strong>R$ {{ item.totalPrice.toFixed(2) }}</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Totais da Nota -->
+        <div class="danfe-totals-bar">
+          <div class="total-col">
+            <span>Subtotal:</span>
+            <strong>R$ {{ selectedDanfe.subtotal.toFixed(2) }}</strong>
+          </div>
+          <div class="total-col" *ngIf="selectedDanfe.discountAmount > 0">
+            <span>Desconto:</span>
+            <strong class="discount-txt">-R$ {{ selectedDanfe.discountAmount.toFixed(2) }}</strong>
+          </div>
+          <div class="total-col">
+            <span>Frete:</span>
+            <strong>R$ {{ selectedDanfe.freightAmount.toFixed(2) }}</strong>
+          </div>
+          <div class="total-col total-highlight">
+            <span>VALOR TOTAL DA NOTA:</span>
+            <strong class="grand-total">R$ {{ selectedDanfe.totalAmount.toFixed(2) }}</strong>
+          </div>
+        </div>
+
+        <div class="danfe-legal-footer">
+          <p>{{ selectedDanfe.complementaryInfo }}</p>
         </div>
       </div>
     </div>

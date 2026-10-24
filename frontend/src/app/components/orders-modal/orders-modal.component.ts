@@ -18,11 +18,49 @@ export class OrdersModalComponent implements OnInit {
   orders: OrderData[] = [];
   isLoading = true;
   errorMessage = '';
+  selectedDanfe: any = null;
+  isLoadingDanfe = false;
+  danfeError = '';
+  copiedKey = false;
 
   constructor(
     public authService: AuthService,
     private http: HttpClient
   ) {}
+
+  openDanfe(orderNumber: string): void {
+    this.isLoadingDanfe = true;
+    this.danfeError = '';
+    this.selectedDanfe = null;
+
+    this.http.get<any>(`${environment.apiUrl}/orders/${orderNumber}/danfe`).subscribe({
+      next: (data) => {
+        this.isLoadingDanfe = false;
+        this.selectedDanfe = data;
+      },
+      error: (err) => {
+        this.isLoadingDanfe = false;
+        this.danfeError = err.error?.message || 'Não foi possível carregar a nota fiscal deste pedido.';
+      }
+    });
+  }
+
+  closeDanfe(): void {
+    this.selectedDanfe = null;
+    this.danfeError = '';
+    this.copiedKey = false;
+  }
+
+  copyAccessKey(key: string): void {
+    if (!key) return;
+    navigator.clipboard.writeText(key.replace(/\s+/g, ''));
+    this.copiedKey = true;
+    setTimeout(() => this.copiedKey = false, 2500);
+  }
+
+  printDanfe(): void {
+    window.print();
+  }
 
   ngOnInit(): void {
     this.loadOrders();
