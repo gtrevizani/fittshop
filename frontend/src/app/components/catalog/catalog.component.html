@@ -54,14 +54,79 @@
           <h3 class="prod-name">{{ prod.name }}</h3>
           <p class="prod-desc">{{ prod.description }}</p>
 
-          <!-- Nutritional Accordion Toggle -->
-          <div class="nutritional-toggle-box" *ngIf="prod.nutritionalInfo">
+          <!-- Nutritional Accordion Toggle (Anvisa RDC 429/2020) -->
+          <div class="nutritional-toggle-box" *ngIf="prod.nutritionalInfo || prod.servingSize">
             <button class="nutri-btn" (click)="toggleNutritional(prod.id)">
-              <span>🧪 {{ expandedNutritionalId === prod.id ? 'Ocultar' : 'Ver' }} Ficha Técnica</span>
+              <span>🔬 {{ expandedNutritionalId === prod.id ? 'Ocultar' : 'Ver' }} Tabela Nutricional (Anvisa)</span>
               <span>{{ expandedNutritionalId === prod.id ? '▲' : '▼' }}</span>
             </button>
             <div class="nutri-drawer" *ngIf="expandedNutritionalId === prod.id">
-              <p>{{ prod.nutritionalInfo }}</p>
+              <div class="anvisa-table-box" *ngIf="prod.servingSize">
+                <div class="anvisa-table-header">
+                  <h4>INFORMAÇÃO NUTRICIONAL</h4>
+                  <span class="serving-txt">Porção: <strong>{{ prod.servingSize }}</strong></span>
+                </div>
+                <table class="anvisa-table">
+                  <thead>
+                    <tr>
+                      <th>Componente</th>
+                      <th>Qtd.</th>
+                      <th>%VD*</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngIf="prod.caloriesKcal !== undefined">
+                      <td>Valor Energético</td>
+                      <td>{{ prod.caloriesKcal }} kcal</td>
+                      <td>{{ calcVd(prod.caloriesKcal, 2000) }}</td>
+                    </tr>
+                    <tr *ngIf="prod.carbohydratesG !== undefined">
+                      <td>Carboidratos</td>
+                      <td>{{ prod.carbohydratesG }} g</td>
+                      <td>{{ calcVd(prod.carbohydratesG, 300) }}</td>
+                    </tr>
+                    <tr *ngIf="prod.proteinsG !== undefined">
+                      <td><strong>Proteínas</strong></td>
+                      <td><strong>{{ prod.proteinsG }} g</strong></td>
+                      <td><strong>{{ calcVd(prod.proteinsG, 50) }}</strong></td>
+                    </tr>
+                    <tr *ngIf="prod.totalFatsG !== undefined">
+                      <td>Gorduras Totais</td>
+                      <td>{{ prod.totalFatsG }} g</td>
+                      <td>{{ calcVd(prod.totalFatsG, 65) }}</td>
+                    </tr>
+                    <tr *ngIf="prod.saturatedFatsG !== undefined">
+                      <td>Gorduras Saturadas</td>
+                      <td>{{ prod.saturatedFatsG }} g</td>
+                      <td>{{ calcVd(prod.saturatedFatsG, 20) }}</td>
+                    </tr>
+                    <tr *ngIf="prod.dietaryFiberG !== undefined">
+                      <td>Fibra Alimentar</td>
+                      <td>{{ prod.dietaryFiberG }} g</td>
+                      <td>{{ calcVd(prod.dietaryFiberG, 25) }}</td>
+                    </tr>
+                    <tr *ngIf="prod.sodiumMg !== undefined">
+                      <td>Sódio</td>
+                      <td>{{ prod.sodiumMg }} mg</td>
+                      <td>{{ calcVd(prod.sodiumMg, 2000) }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <span class="vd-legend">* % Valores Diários com base em dieta de 2.000 kcal.</span>
+              </div>
+
+              <!-- Ativos / Aminoácidos -->
+              <div class="nutri-actives" *ngIf="prod.keyActives">
+                <span class="actives-title">⚡ Ativos de Alta Performance:</span>
+                <p>{{ prod.keyActives }}</p>
+              </div>
+
+              <!-- Alérgenos & Anvisa -->
+              <div class="nutri-allergens" *ngIf="prod.allergens">
+                <p><strong>{{ prod.allergens }}</strong></p>
+                <p class="anvisa-stamp" *ngIf="prod.anvisaNotice">🏛️ {{ prod.anvisaNotice }}</p>
+              </div>
+
               <div class="lote-info" *ngIf="prod.batchCode">
                 <span>Lote: {{ prod.batchCode }}</span>
                 <span>Val: {{ prod.expirationDate }}</span>

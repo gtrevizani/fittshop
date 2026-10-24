@@ -215,6 +215,102 @@
   animation: fadeIn 0.2s ease;
 }
 
+.anvisa-table-box {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  padding: 8px;
+  margin-bottom: 8px;
+}
+
+.anvisa-table-header {
+  border-bottom: 2px solid #fff;
+  padding-bottom: 4px;
+  margin-bottom: 6px;
+}
+
+.anvisa-table-header h4 {
+  font-size: 0.72rem;
+  font-weight: 900;
+  color: #fff;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+.serving-txt {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+
+.serving-txt strong {
+  color: #00f0ff;
+}
+
+.anvisa-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.7rem;
+  text-align: left;
+}
+
+.anvisa-table th {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-muted);
+  padding: 3px 4px;
+}
+
+.anvisa-table td {
+  padding: 3px 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.vd-legend {
+  display: block;
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+  font-style: italic;
+}
+
+.nutri-actives {
+  background: rgba(0, 240, 255, 0.04);
+  border-left: 2px solid #00f0ff;
+  padding: 6px 8px;
+  margin-bottom: 6px;
+  font-size: 0.68rem;
+}
+
+.actives-title {
+  font-weight: 800;
+  color: #00f0ff;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.nutri-actives p {
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.nutri-allergens {
+  background: rgba(255, 184, 0, 0.05);
+  border: 1px dashed rgba(255, 184, 0, 0.2);
+  padding: 6px 8px;
+  border-radius: 4px;
+  margin-bottom: 6px;
+  font-size: 0.65rem;
+  color: #ffda79;
+}
+
+.nutri-allergens p {
+  margin: 0 0 2px;
+}
+
+.anvisa-stamp {
+  font-size: 0.62rem;
+  color: var(--text-muted);
+}
+
 .lote-info {
   display: flex;
   justify-content: space-between;

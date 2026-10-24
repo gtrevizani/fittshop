@@ -61,4 +61,10 @@ export class CatalogComponent {
   toggleNutritional(id: number): void {
     this.expandedNutritionalId = this.expandedNutritionalId === id ? null : id;
   }
+
+  calcVd(val: number | undefined, ref: number): string {
+    if (val === undefined || val === null || val === 0) return '0%';
+    const pct = Math.round((val / ref) * 100);
+    return `${pct}%`;
+  }
 }

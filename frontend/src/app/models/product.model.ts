@@ -13,4 +13,15 @@ export interface Product {
   batchCode?: string;
   expirationDate?: string;
   weightKg?: number;
+  servingSize?: string;
+  caloriesKcal?: number;
+  carbohydratesG?: number;
+  proteinsG?: number;
+  totalFatsG?: number;
+  saturatedFatsG?: number;
+  dietaryFiberG?: number;
+  sodiumMg?: number;
+  keyActives?: string;
+  allergens?: string;
+  anvisaNotice?: string;
 }

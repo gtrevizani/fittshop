@@ -117,4 +117,70 @@ public class Product {
 
     public Long getVersion() { return version; }
     public void setVersion(Long version) { this.version = version; }
+
+    @Column(name = "serving_size", length = 100)
+    private String servingSize;
+
+    @Column(name = "calories_kcal")
+    private Integer caloriesKcal;
+
+    @Column(name = "carbohydrates_g", precision = 5, scale = 2)
+    private BigDecimal carbohydratesG;
+
+    @Column(name = "proteins_g", precision = 5, scale = 2)
+    private BigDecimal proteinsG;
+
+    @Column(name = "total_fats_g", precision = 5, scale = 2)
+    private BigDecimal totalFatsG;
+
+    @Column(name = "saturated_fats_g", precision = 5, scale = 2)
+    private BigDecimal saturatedFatsG;
+
+    @Column(name = "dietary_fiber_g", precision = 5, scale = 2)
+    private BigDecimal dietaryFiberG;
+
+    @Column(name = "sodium_mg")
+    private Integer sodiumMg;
+
+    @Column(name = "key_actives", length = 255)
+    private String keyActives;
+
+    @Column(length = 255)
+    private String allergens;
+
+    @Column(name = "anvisa_notice", length = 255)
+    private String anvisaNotice;
+
+    public String getServingSize() { return servingSize; }
+    public void setServingSize(String servingSize) { this.servingSize = servingSize; }
+
+    public Integer getCaloriesKcal() { return caloriesKcal; }
+    public void setCaloriesKcal(Integer caloriesKcal) { this.caloriesKcal = caloriesKcal; }
+
+    public BigDecimal getCarbohydratesG() { return carbohydratesG; }
+    public void setCarbohydratesG(BigDecimal carbohydratesG) { this.carbohydratesG = carbohydratesG; }
+
+    public BigDecimal getProteinsG() { return proteinsG; }
+    public void setProteinsG(BigDecimal proteinsG) { this.proteinsG = proteinsG; }
+
+    public BigDecimal getTotalFatsG() { return totalFatsG; }
+    public void setTotalFatsG(BigDecimal totalFatsG) { this.totalFatsG = totalFatsG; }
+
+    public BigDecimal getSaturatedFatsG() { return saturatedFatsG; }
+    public void setSaturatedFatsG(BigDecimal saturatedFatsG) { this.saturatedFatsG = saturatedFatsG; }
+
+    public BigDecimal getDietaryFiberG() { return dietaryFiberG; }
+    public void setDietaryFiberG(BigDecimal dietaryFiberG) { this.dietaryFiberG = dietaryFiberG; }
+
+    public Integer getSodiumMg() { return sodiumMg; }
+    public void setSodiumMg(Integer sodiumMg) { this.sodiumMg = sodiumMg; }
+
+    public String getKeyActives() { return keyActives; }
+    public void setKeyActives(String keyActives) { this.keyActives = keyActives; }
+
+    public String getAllergens() { return allergens; }
+    public void setAllergens(String allergens) { this.allergens = allergens; }
+
+    public String getAnvisaNotice() { return anvisaNotice; }
+    public void setAnvisaNotice(String anvisaNotice) { this.anvisaNotice = anvisaNotice; }
 }
