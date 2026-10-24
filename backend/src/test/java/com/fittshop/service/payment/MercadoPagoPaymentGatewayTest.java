@@ -67,4 +67,34 @@ class MercadoPagoPaymentGatewayTest {
         assertFalse(gateway.handleWebhook(null, null));
         assertFalse(gateway.handleWebhook("", ""));
     }
+
+    @Test
+    @DisplayName("Deve validar assinatura HMAC-SHA256 do Webhook oficial")
+    void shouldVerifyHmacSha256Signature() {
+        String payload = "{\"data\":{\"id\":\"987654\"}}";
+        String secret = "test_webhook_secret_key_123";
+        String ts = "1710000000";
+
+        // Gera assinatura HMAC esperada: ts:[ts];body:[payload]
+        String manifest = "ts:" + ts + ";body:" + payload;
+        try {
+            javax.crypto.Mac mac = javax.crypto.Mac.getInstance("HmacSHA256");
+            mac.init(new javax.crypto.spec.SecretKeySpec(secret.getBytes(java.nio.charset.StandardCharsets.UTF_8), "HmacSHA256"));
+            byte[] hash = mac.doFinal(manifest.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hash) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) hexString.append('0');
+                hexString.append(hex);
+            }
+            String v1 = hexString.toString();
+            String signatureHeader = "ts=" + ts + ",v1=" + v1;
+
+            assertTrue(gateway.verifySignature(payload, signatureHeader, secret));
+            assertFalse(gateway.verifySignature(payload, signatureHeader, "wrong_secret"));
+            assertFalse(gateway.verifySignature("tampered_payload", signatureHeader, secret));
+        } catch (Exception e) {
+            fail("Erro ao testar HMAC: " + e.getMessage());
+        }
+    }
 }

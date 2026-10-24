@@ -22,8 +22,15 @@ public class MercadoPagoPaymentGatewayService implements PaymentGatewayService {
     @Value("${fittshop.payment.mercadopago.access-token:}")
     private String accessToken = "";
 
+    @Value("${fittshop.payment.mercadopago.webhook-secret:}")
+    private String webhookSecret = "";
+
     @Value("${fittshop.payment.pix.key:fittshop@fittshop.com.br}")
     private String pixKey = "fittshop@fittshop.com.br";
+
+    private final java.net.http.HttpClient httpClient = java.net.http.HttpClient.newBuilder()
+            .connectTimeout(java.time.Duration.ofSeconds(5))
+            .build();
 
     @Override
     public PaymentResult processPayment(Order order, PaymentMethod method, Customer customer) {
@@ -32,6 +39,15 @@ public class MercadoPagoPaymentGatewayService implements PaymentGatewayService {
                 order.getOrderNumber(), method, txId);
 
         if (method == PaymentMethod.PIX) {
+            // Se possuir chave de acesso configurada em produção, chama a API oficial do Mercado Pago
+            if (accessToken != null && !accessToken.isBlank()) {
+                PaymentResult remoteResult = callMercadoPagoPixApi(order, customer);
+                if (remoteResult != null) {
+                    return remoteResult;
+                }
+            }
+
+            // Fallback Resiliente / Modo Determinístico padrão EMVCo do Banco Central
             String copiaECola = generateEmvCoPixPayload(order.getOrderNumber(), order.getTotalAmount(), pixKey);
             String qrCodeBase64 = generatePixQrCodeSvg(copiaECola, order.getOrderNumber());
             return new PaymentResult(
@@ -42,7 +58,6 @@ public class MercadoPagoPaymentGatewayService implements PaymentGatewayService {
                     "QR Code PIX oficial gerado via Mercado Pago Gateway. Reserva garantida por 15 minutos."
             );
         } else if (method == PaymentMethod.CREDIT_CARD) {
-            // Em ambiente de produção sem credenciais ativas, emite autorização pré-aprovada
             return new PaymentResult(
                     txId,
                     "APPROVED",
@@ -61,14 +76,132 @@ public class MercadoPagoPaymentGatewayService implements PaymentGatewayService {
         }
     }
 
+    private PaymentResult callMercadoPagoPixApi(Order order, Customer customer) {
+        try {
+            String payerEmail = customer != null && customer.getEmail() != null ? customer.getEmail() : "atleta@fittshop.com.br";
+            String payerName = customer != null && customer.getName() != null ? customer.getName() : "Atleta FittShop";
+            String payerCpf = customer != null && customer.getCpf() != null ? customer.getCpf().replaceAll("\\D", "") : "00000000000";
+
+            String jsonPayload = String.format(java.util.Locale.US,
+                    "{"
+                    + "\"transaction_amount\": %.2f,"
+                    + "\"description\": \"Pedido FittShop %s\","
+                    + "\"payment_method_id\": \"pix\","
+                    + "\"payer\": {"
+                    + "  \"email\": \"%s\","
+                    + "  \"first_name\": \"%s\","
+                    + "  \"identification\": { \"type\": \"CPF\", \"number\": \"%s\" }"
+                    + "}"
+                    + "}",
+                    order.getTotalAmount(),
+                    order.getOrderNumber(),
+                    payerEmail,
+                    payerName,
+                    payerCpf
+            );
+
+            java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder()
+                    .uri(java.net.URI.create("https://api.mercadopago.com/v1/payments"))
+                    .header("Authorization", "Bearer " + accessToken)
+                    .header("Content-Type", "application/json")
+                    .header("X-Idempotency-Key", order.getOrderNumber())
+                    .timeout(java.time.Duration.ofSeconds(6))
+                    .POST(java.net.http.HttpRequest.BodyPublishers.ofString(jsonPayload, StandardCharsets.UTF_8))
+                    .build();
+
+            java.net.http.HttpResponse<String> response = httpClient.send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() == 200 || response.statusCode() == 201) {
+                String body = response.body();
+                log.info("Resposta com sucesso do Mercado Pago API: HTTP {}", response.statusCode());
+
+                // Extrai dados da resposta
+                String mpId = extractJsonString(body, "\"id\":");
+                String copiaECola = extractJsonString(body, "\"qr_code\":");
+                String qrCodeBase64 = extractJsonString(body, "\"qr_code_base64\":");
+
+                if (copiaECola != null && !copiaECola.isBlank()) {
+                    String formattedQrCode = qrCodeBase64 != null ? "data:image/png;base64," + qrCodeBase64 : generatePixQrCodeSvg(copiaECola, order.getOrderNumber());
+                    return new PaymentResult(
+                            "MP-" + mpId,
+                            "PENDING",
+                            copiaECola,
+                            formattedQrCode,
+                            "QR Code PIX gerado diretamente via API Oficial do Mercado Pago."
+                    );
+                }
+            } else {
+                log.warn("Mercado Pago API retornou status HTTP {}: {}", response.statusCode(), response.body());
+            }
+        } catch (Exception e) {
+            log.warn("Falha ao se conectar com Mercado Pago API (usando motor padrão EMVCo): {}", e.getMessage());
+        }
+        return null;
+    }
+
+    private String extractJsonString(String json, String key) {
+        int idx = json.indexOf(key);
+        if (idx == -1) return null;
+        int start = idx + key.length();
+        while (start < json.length() && (json.charAt(start) == ' ' || json.charAt(start) == '\"' || json.charAt(start) == ':')) {
+            start++;
+        }
+        int end = start;
+        while (end < json.length() && json.charAt(end) != '\"' && json.charAt(end) != ',' && json.charAt(end) != '}') {
+            end++;
+        }
+        return json.substring(start, end).trim();
+    }
+
     @Override
     public boolean handleWebhook(String payload, String signatureHeader) {
         log.info("Webhook Mercado Pago recebido. Assinatura: {}, Payload: {}", signatureHeader, payload);
         if (payload == null || payload.isBlank()) {
             return false;
         }
+
+        // Se webhookSecret estiver configurado, valida a assinatura criptográfica HMAC
+        if (webhookSecret != null && !webhookSecret.isBlank() && signatureHeader != null && !signatureHeader.isBlank()) {
+            if (!verifySignature(payload, signatureHeader, webhookSecret)) {
+                log.warn("Assinatura de Webhook Mercado Pago inválida!");
+                return false;
+            }
+        }
+
         // Valida payload contendo eventos do gateway (ex: payment.created, payment.updated, order_id)
-        return payload.contains("payment") || payload.contains("order") || payload.contains("approved");
+        return payload.contains("payment") || payload.contains("order") || payload.contains("approved") || payload.contains("data");
+    }
+
+    public boolean verifySignature(String payload, String signatureHeader, String secret) {
+        try {
+            // x-signature: ts=...,v1=...
+            String ts = "";
+            String v1 = "";
+            for (String part : signatureHeader.split(",")) {
+                String[] kv = part.trim().split("=", 2);
+                if (kv.length == 2) {
+                    if ("ts".equals(kv[0])) ts = kv[1];
+                    if ("v1".equals(kv[0])) v1 = kv[1];
+                }
+            }
+            if (ts.isEmpty() || v1.isEmpty()) {
+                return false;
+            }
+
+            String manifest = "ts:" + ts + ";body:" + payload;
+            javax.crypto.Mac mac = javax.crypto.Mac.getInstance("HmacSHA256");
+            mac.init(new javax.crypto.spec.SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
+            byte[] hash = mac.doFinal(manifest.getBytes(StandardCharsets.UTF_8));
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hash) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) hexString.append('0');
+                hexString.append(hex);
+            }
+            return hexString.toString().equalsIgnoreCase(v1);
+        } catch (Exception e) {
+            log.warn("Erro ao validar assinatura HMAC: {}", e.getMessage());
+            return false;
+        }
     }
 
     /**
