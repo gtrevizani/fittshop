@@ -20,9 +20,23 @@ import org.springframework.web.bind.annotation.*;
 public class CheckoutController {
 
     private final CheckoutService checkoutService;
+    private final com.fittshop.service.coupon.CouponService couponService;
 
-    public CheckoutController(CheckoutService checkoutService) {
+    public CheckoutController(CheckoutService checkoutService,
+                              com.fittshop.service.coupon.CouponService couponService) {
         this.checkoutService = checkoutService;
+        this.couponService = couponService;
+    }
+
+    @PostMapping("/validate-coupon")
+    @Operation(summary = "Valida cupom promocional no banco de dados com anti-abuso por CPF")
+    public ResponseEntity<com.fittshop.service.coupon.CouponService.CouponValidationResult> validateCoupon(
+            @RequestBody java.util.Map<String, Object> body) {
+        String code = body.get("code") != null ? body.get("code").toString() : null;
+        String cpf = body.get("cpf") != null ? body.get("cpf").toString() : null;
+        Object subtotalObj = body.get("subtotal");
+        java.math.BigDecimal subtotal = subtotalObj != null ? new java.math.BigDecimal(subtotalObj.toString()) : java.math.BigDecimal.ZERO;
+        return ResponseEntity.ok(couponService.validateCoupon(code, cpf, subtotal));
     }
 
     @PostMapping("/freight")

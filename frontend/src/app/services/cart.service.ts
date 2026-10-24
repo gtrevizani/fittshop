@@ -2,7 +2,7 @@ import { Injectable, computed, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CartItem, CheckoutRequestPayload, CheckoutResult, FreightQuote } from '../models/cart.model';
 import { Product } from '../models/product.model';
-import { Observable, tap } from 'rxjs';
+import { Observable, tap, catchError, of } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 export interface AffiliateValidateResponse {
@@ -27,6 +27,7 @@ export class CartService {
 
   couponCode = signal<string>('');
   couponDiscountRate = signal<number>(0);
+  couponFixedDiscount = signal<number>(0);
   couponAffiliateName = signal<string>('');
   fittCoinsToRedeem = signal<number>(0);
   userFittCoinsBalance = signal<number>(120); // 120 FittCoins = R$ 60,00 de saldo inicial
@@ -53,6 +54,9 @@ export class CartService {
   });
 
   couponDiscount = computed(() => {
+    if (this.couponFixedDiscount() > 0) {
+      return Number(Math.min(this.couponFixedDiscount(), this.subtotal()).toFixed(2));
+    }
     const rate = this.couponDiscountRate();
     if (rate > 0) {
       return Number((this.subtotal() * rate).toFixed(2));
@@ -181,19 +185,38 @@ export class CartService {
     this.saveToStorage();
   }
 
-  applyCoupon(code: string): Observable<AffiliateValidateResponse> {
+  applyCoupon(code: string, cpf?: string): Observable<any> {
     const clean = code.trim().toUpperCase();
-    return this.http.get<AffiliateValidateResponse>(`${environment.apiUrl}/affiliates/validate/${clean}`).pipe(
+    const payload = {
+      code: clean,
+      cpf: cpf || '',
+      subtotal: this.subtotal()
+    };
+
+    return this.http.post<any>(`${this.checkoutApi}/validate-coupon`, payload).pipe(
       tap((res) => {
-        if (res.valid) {
-          this.couponCode.set(res.affiliateCode);
-          this.couponDiscountRate.set(res.discountPercentage);
-          this.couponAffiliateName.set(res.affiliateName);
-        } else {
-          this.couponCode.set('');
-          this.couponDiscountRate.set(0);
-          this.couponAffiliateName.set('');
+        if (res && res.valid) {
+          this.couponCode.set(res.code);
+          this.couponFixedDiscount.set(res.discountAmount);
+          this.couponAffiliateName.set(res.description);
         }
+      }),
+      catchError(() => {
+        return this.http.get<AffiliateValidateResponse>(`${environment.apiUrl}/affiliates/validate/${clean}`).pipe(
+          tap((res) => {
+            if (res.valid) {
+              this.couponCode.set(res.affiliateCode);
+              this.couponDiscountRate.set(res.discountPercentage);
+              this.couponFixedDiscount.set(0);
+              this.couponAffiliateName.set(res.affiliateName);
+            } else {
+              this.couponCode.set('');
+              this.couponDiscountRate.set(0);
+              this.couponFixedDiscount.set(0);
+              this.couponAffiliateName.set('');
+            }
+          })
+        );
       })
     );
   }

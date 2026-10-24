@@ -34,21 +34,28 @@ export class CartDrawerComponent {
     this.isValidatingCoupon = true;
     this.couponMessage = 'Validando código na nuvem FittShop...';
 
-    this.cartService.applyCoupon(this.couponInput).subscribe({
+    const currentUser = this.authService.currentUser();
+    const userCpf = currentUser ? (currentUser as any).cpf : '';
+
+    this.cartService.applyCoupon(this.couponInput, userCpf).subscribe({
       next: (res) => {
         this.isValidatingCoupon = false;
-        if (res.valid) {
-          const discountDesc = (res.discountPercentage * 100).toFixed(0);
-          this.couponMessage = `✅ Código ${res.affiliateCode} aplicado (${discountDesc}% OFF - ${res.affiliateName})`;
+        if (res && res.valid) {
+          if (res.discountAmount !== undefined) {
+            this.couponMessage = `✅ Cupom ${res.code} aplicado: R$ ${res.discountAmount.toFixed(2)} OFF (${res.description})`;
+          } else {
+            const discountDesc = (res.discountPercentage * 100).toFixed(0);
+            this.couponMessage = `✅ Consultor ${res.affiliateCode} aplicado (${discountDesc}% OFF - ${res.affiliateName})`;
+          }
           this.couponSuccess = true;
         } else {
-          this.couponMessage = 'Código de consultor ou cupom não encontrado.';
+          this.couponMessage = res?.message || 'Código de consultor ou cupom não encontrado.';
           this.couponSuccess = false;
         }
       },
-      error: () => {
+      error: (err) => {
         this.isValidatingCoupon = false;
-        this.couponMessage = 'Erro de conexão ao validar cupom na nuvem.';
+        this.couponMessage = err.error?.message || 'Erro de conexão ao validar cupom na nuvem.';
         this.couponSuccess = false;
       }
     });

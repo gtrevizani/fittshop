@@ -40,6 +40,7 @@ public class CheckoutService {
     private final com.fittshop.service.payment.PaymentGatewayService paymentGatewayService;
     private final com.fittshop.service.affiliate.AffiliateService affiliateService;
     private final com.fittshop.service.notification.NotificationService notificationService;
+    private final com.fittshop.service.coupon.CouponService couponService;
 
     @Value("${fittshop.business.free-shipping-threshold-sudeste:199.00}")
     private BigDecimal thresholdSudeste;
@@ -67,7 +68,8 @@ public class CheckoutService {
                            LoyaltyFittCoinsEngine loyaltyEngine,
                            com.fittshop.service.payment.PaymentGatewayService paymentGatewayService,
                            com.fittshop.service.affiliate.AffiliateService affiliateService,
-                           com.fittshop.service.notification.NotificationService notificationService) {
+                           com.fittshop.service.notification.NotificationService notificationService,
+                           com.fittshop.service.coupon.CouponService couponService) {
         this.productRepository = productRepository;
         this.orderRepository = orderRepository;
         this.customerRepository = customerRepository;
@@ -80,6 +82,7 @@ public class CheckoutService {
         this.paymentGatewayService = paymentGatewayService;
         this.affiliateService = affiliateService;
         this.notificationService = notificationService;
+        this.couponService = couponService;
     }
 
     public FreightResponse calculateFreight(FreightRequest request) {
@@ -149,18 +152,34 @@ public class CheckoutService {
             fittCoinsToRedeem = loyaltyAccount.getFittCoinsBalance();
         }
 
-        // 4. Cálculo de Descontos (Combos + Cupons + FittCoins)
+        // 4. Cálculo de Descontos (Combos + Cupons de Banco de Dados + FittCoins)
+        BigDecimal couponDiscount = BigDecimal.ZERO;
+        if (request.getCouponCode() != null && !request.getCouponCode().isBlank()) {
+            com.fittshop.service.coupon.CouponService.CouponValidationResult couponResult =
+                    couponService.validateCoupon(request.getCouponCode(), customer.getCpf(), subtotal);
+            if (!couponResult.isValid()) {
+                throw new IllegalArgumentException("Cupom inválido: " + couponResult.getMessage());
+            }
+            couponDiscount = couponResult.getDiscountAmount();
+        }
+
         SmartDiscountEngine.DiscountSummary discountSummary = discountEngine.calculateDiscounts(
-                subtotal, productNames, request.getCouponCode(), fittCoinsToRedeem,
+                subtotal, productNames, null, fittCoinsToRedeem,
                 fittCoinsRedemptionValue, fittCoinsMaxDiscountPercentage
         );
 
+        BigDecimal totalDiscount = discountSummary.getComboDiscount().add(couponDiscount).add(discountSummary.getFittCoinsDiscount());
+        if (totalDiscount.compareTo(subtotal) > 0) {
+            totalDiscount = subtotal;
+        }
+        BigDecimal netSubtotal = subtotal.subtract(totalDiscount).setScale(2, RoundingMode.HALF_UP);
+
         // 5. Cálculo do Frete com Transportadoras / Melhor Envio
         FreightCalculationEngine.FreightResult freightResult = freightCarrierService.calculateShipping(
-                request.getDeliveryZipCode(), discountSummary.getNetSubtotal(), totalWeight, thresholdSudeste, thresholdOutros
+                request.getDeliveryZipCode(), netSubtotal, totalWeight, thresholdSudeste, thresholdOutros
         );
 
-        BigDecimal finalTotal = discountSummary.getNetSubtotal().add(freightResult.getFreightAmount()).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal finalTotal = netSubtotal.add(freightResult.getFreightAmount()).setScale(2, RoundingMode.HALF_UP);
 
         // 6. Atualizar Saldo de FittCoins
         if (fittCoinsToRedeem > 0) {
@@ -180,7 +199,7 @@ public class CheckoutService {
         order.setCustomerId(customer.getId());
         order.setStatus(OrderStatus.AGUARDANDO_PAGAMENTO);
         order.setSubtotal(subtotal);
-        order.setDiscountAmount(discountSummary.getTotalDiscount());
+        order.setDiscountAmount(totalDiscount);
         order.setFreightAmount(freightResult.getFreightAmount());
         order.setTotalAmount(finalTotal);
         order.setPaymentMethod(request.getPaymentMethod());
@@ -208,6 +227,11 @@ public class CheckoutService {
         }
 
         orderRepository.save(order);
+
+        // Grava uso do cupom se utilizado
+        if (request.getCouponCode() != null && !request.getCouponCode().isBlank()) {
+            couponService.recordCouponUsage(request.getCouponCode(), customer.getCpf(), orderNumber);
+        }
 
         // Notificação Transacional (WhatsApp & E-mail)
         notificationService.notifyOrderCreated(order, customer);
