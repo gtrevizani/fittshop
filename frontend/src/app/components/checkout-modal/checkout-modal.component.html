@@ -123,8 +123,17 @@
             <span class="final-price">R$ {{ cartService.finalTotal().toFixed(2) }}</span>
           </div>
 
+          <div *ngIf="warmingUpNotice" style="background: rgba(0, 240, 255, 0.1); border: 1px solid #00f0ff; color: #00f0ff; padding: 10px 14px; border-radius: 8px; margin-bottom: 12px; font-size: 0.8rem; line-height: 1.4;">
+            ⚡ <strong>Aquecimento de Servidor em Nuvem:</strong> Os servidores da nuvem estão inicializando conexões seguras com o banco e o gateway. Aguarde alguns segundos...
+          </div>
+
+          <div *ngIf="submitErrorMessage" style="background: rgba(255, 77, 79, 0.12); border: 1px solid #ff4d4f; color: #ff7875; padding: 10px 14px; border-radius: 8px; margin-bottom: 12px; font-size: 0.8rem; line-height: 1.4;">
+            ⚠️ <strong>Não foi possível concluir o pedido:</strong>
+            <p style="margin: 4px 0 0;">{{ submitErrorMessage }}</p>
+          </div>
+
           <button class="btn-primary confirm-order-btn" (click)="submitOrder()" [disabled]="isSubmitting">
-            <span *ngIf="!isSubmitting">Gerar Pedido & Travar Estoque</span>
+            <span *ngIf="!isSubmitting">{{ submitErrorMessage ? 'Tentar Concluir Pedido Novamente' : 'Gerar Pedido & Travar Estoque' }}</span>
             <span *ngIf="isSubmitting">Conectando ao Gateway e Alocando Reserva...</span>
           </button>
         </div>

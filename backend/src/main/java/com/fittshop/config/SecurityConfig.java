@@ -50,6 +50,7 @@ public class SecurityConfig {
                                 "/orders/**",
                                 "/inventory/**",
                                 "/auth/**",
+                                "/affiliates/**",
                                 "/actuator/**",
                                 "/h2-console/**",
                                 "/swagger-ui/**",

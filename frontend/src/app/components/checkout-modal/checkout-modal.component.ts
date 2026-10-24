@@ -29,6 +29,8 @@ export class CheckoutModalComponent implements OnInit, OnDestroy {
   isSearchingCep = false;
   cepErrorMessage = '';
   cpfErrorMessage = '';
+  submitErrorMessage = '';
+  warmingUpNotice = false;
   orderResult: CheckoutResult | null = null;
   copiedPix = false;
 
@@ -102,12 +104,20 @@ export class CheckoutModalComponent implements OnInit, OnDestroy {
 
   submitOrder(): void {
     this.cpfErrorMessage = '';
+    this.submitErrorMessage = '';
+    this.warmingUpNotice = false;
     const cleanCpf = this.customerCpf.replace(/\D/g, '');
     if (cleanCpf.length === 11 && !this.validateCpf(this.customerCpf)) {
       this.cpfErrorMessage = 'CPF inválido. Verifique os dígitos digitados.';
       return;
     }
     this.isSubmitting = true;
+
+    const warmTimer = setTimeout(() => {
+      if (this.isSubmitting) {
+        this.warmingUpNotice = true;
+      }
+    }, 3500);
 
     const payload: CheckoutRequestPayload = {
       customerName: this.customerName,
@@ -128,14 +138,26 @@ export class CheckoutModalComponent implements OnInit, OnDestroy {
 
     this.cartService.submitCheckout(payload).subscribe({
       next: (result) => {
+        clearTimeout(warmTimer);
         this.orderResult = result;
         this.cartService.lastOrderResult.set(result);
         this.step = 'CONFIRMATION';
         this.isSubmitting = false;
+        this.warmingUpNotice = false;
         this.cartService.clearCart();
       },
-      error: () => {
+      error: (err) => {
+        clearTimeout(warmTimer);
         this.isSubmitting = false;
+        this.warmingUpNotice = false;
+        const msg = err?.error?.message || err?.error?.error;
+        if (msg) {
+          this.submitErrorMessage = msg;
+        } else if (err?.status === 0 || err?.status === 503 || err?.status === 504) {
+          this.submitErrorMessage = 'Os servidores em nuvem podem estar acordando (cold start) ou a conexão oscilou. Por favor, aguarde alguns instantes e tente novamente.';
+        } else {
+          this.submitErrorMessage = `Erro de comunicação com o servidor (${err?.status || '500'}). Tente novamente em instantes.`;
+        }
       }
     });
   }

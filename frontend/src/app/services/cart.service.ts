@@ -195,26 +195,6 @@ export class CartService {
   }
 
   submitCheckout(payload: CheckoutRequestPayload): Observable<CheckoutResult> {
-    return this.http.post<CheckoutResult>(this.checkoutApi, payload).pipe(
-      catchError(() => {
-        // Fallback robusto se a API Java estiver iniciando
-        const orderNum = 'FITT-' + Math.floor(100000 + Math.random() * 900000);
-        const fallbackResult: CheckoutResult = {
-          orderNumber: orderNum,
-          status: 'AGUARDANDO_PAGAMENTO',
-          subtotal: this.subtotal(),
-          discountAmount: this.totalDiscount(),
-          freightAmount: this.freightAmount(),
-          totalAmount: this.finalTotal(),
-          paymentMethod: payload.paymentMethod,
-          reservationUuid: 'res-' + Date.now(),
-          reservationExpiresAt: new Date(Date.now() + 15 * 60000).toISOString(),
-          pixCopiaECola: `00020126580014BR.GOV.BCB.PIX0136fittshop-pagamentos@fittshop.com.br520400005303986540${this.finalTotal().toFixed(2)}5802BR5908FITTSHOP6009SAOPAULO62070503***6304${orderNum.slice(-4)}`,
-          fittCoinsEarned: this.fittCoinsToEarn(),
-          message: 'Pedido gerado com sucesso! Reserva atômica de estoque alocada por 15 minutos.'
-        };
-        return of(fallbackResult);
-      })
-    );
+    return this.http.post<CheckoutResult>(this.checkoutApi, payload);
   }
 }
