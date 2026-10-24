@@ -117,20 +117,39 @@
     </div>
 
     <!-- TAB 2: CAIXA / PDV -->
+    <!-- TAB 2: CAIXA (TERMINAL DE VENDAS & EMISSÃO) -->
     <div *ngIf="activeTab === 'CAIXA'" class="tab-content">
       <div class="panel card-glass">
         <div class="panel-header-action">
           <div>
             <h3>💳 Terminal de Caixa & Emissão de Pedidos</h3>
-            <p class="panel-desc">Validação de pedidos online, baixas de entrega e emissão de notas fiscais.</p>
+            <p class="panel-desc">Validação de pedidos online em tempo real, baixas de entrega e emissão de notas fiscais integradas ao PostgreSQL Neon.</p>
           </div>
-          <div class="caixa-stat">
-            <span class="stat-title">Faturamento do Dia (Caixa):</span>
-            <span class="stat-amt">R$ {{ calculateTotalRevenue().toFixed(2) }}</span>
+          <div style="display: flex; gap: 16px; align-items: center;">
+            <button class="btn-table-action" (click)="fetchOrders()" [disabled]="isLoadingOrders">
+              {{ isLoadingOrders ? 'Atualizando...' : '🔄 Atualizar Pedidos' }}
+            </button>
+            <div class="caixa-stat">
+              <span class="stat-title">Faturamento Total Confirmado:</span>
+              <span class="stat-amt">R$ {{ calculateTotalRevenue().toFixed(2) }}</span>
+            </div>
           </div>
         </div>
 
-        <div class="orders-table-wrapper">
+        <div *ngIf="caixaActionMessage" class="alert-success" style="margin-bottom: 16px;">
+          {{ caixaActionMessage }}
+        </div>
+
+        <div *ngIf="isLoadingOrders" style="padding: 24px; text-align: center; color: #00f0ff;">
+          ⚡ Carregando pedidos oficiais da nuvem Neon DB...
+        </div>
+
+        <div *ngIf="!isLoadingOrders && caixaOrders.length === 0" style="padding: 32px 16px; text-align: center; background: rgba(255, 255, 255, 0.02); border-radius: 8px; border: 1px dashed rgba(255, 255, 255, 0.1);">
+          <p style="font-size: 1.1rem; color: #fff; margin-bottom: 8px;">📦 Nenhum pedido registrado no banco de dados até o momento.</p>
+          <p style="color: #888; font-size: 0.85rem;">Conclua uma compra pelo checkout da loja para visualizar a transição de status FSM em tempo real.</p>
+        </div>
+
+        <div class="orders-table-wrapper" *ngIf="!isLoadingOrders && caixaOrders.length > 0">
           <table class="bo-table">
             <thead>
               <tr>
@@ -163,7 +182,7 @@
                       *ngIf="o.status === 'AGUARDANDO_PAGAMENTO'"
                       class="btn-table-action"
                       (click)="confirmCaixaPayment(o.orderNumber)"
-                      title="Confirmar pagamento em dinheiro/maquininha física">
+                      title="Confirmar pagamento e avançar para PAGO">
                       Aprovar Pgto
                     </button>
                     <button 
@@ -182,13 +201,60 @@
       </div>
     </div>
 
-    <!-- TAB 3: VENDEDORAS -->
+    <!-- TAB 3: VENDEDORAS / AFILIADOS -->
     <div *ngIf="activeTab === 'VENDEDORAS'" class="tab-content">
       <div class="panel card-glass">
-        <h3>🏷️ Gestão de Vendas Assistidas & Comissões</h3>
-        <p class="panel-desc">Acompanhamento de vendas efetuadas pelas consultoras de loja e personais credenciados.</p>
+        <div class="panel-header-action">
+          <div>
+            <h3>🏷️ Gestão de Afiliados, Consultores & Personal Trainers</h3>
+            <p class="panel-desc">Acompanhamento do livro-razão de comissões sincronizado com a tabela affiliate_commissions no PostgreSQL Neon.</p>
+          </div>
+          <button class="btn-table-action" (click)="fetchAffiliatesData()" [disabled]="isLoadingSellers">
+            {{ isLoadingSellers ? 'Carregando...' : '🔄 Atualizar Extratos' }}
+          </button>
+        </div>
 
-        <div class="sellers-grid">
+        <!-- Consulta Individual de Consultor -->
+        <div class="tool-box" style="margin-bottom: 24px; padding: 16px; background: rgba(255, 255, 255, 0.02); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.05);">
+          <label style="display: block; font-size: 0.85rem; color: #888; margin-bottom: 8px;">Consultar Extrato por Código de Afiliado ou Cupom:</label>
+          <div style="display: flex; gap: 12px; max-width: 450px;">
+            <input type="text" placeholder="Ex: SARAH10, PERSONAL10..." [(ngModel)]="searchAffiliateCode" (keyup.enter)="searchAffiliate()" style="flex: 1; padding: 8px 12px; background: rgba(0,0,0,0.4); border: 1px solid #333; color: #fff; border-radius: 6px;">
+            <button class="btn-table-action" (click)="searchAffiliate()">Consultar</button>
+          </div>
+          <small *ngIf="affiliateSearchError" style="color: #ff4d4f; font-size: 0.8rem; margin-top: 6px; display: block;">{{ affiliateSearchError }}</small>
+        </div>
+
+        <!-- Resultado da Busca Individual -->
+        <div *ngIf="searchedAffiliateStatement" class="seller-card card-glass" style="margin-bottom: 24px; border-color: #00f0ff;">
+          <div class="seller-head">
+            <span class="seller-avatar">⭐</span>
+            <div>
+              <h4>{{ searchedAffiliateStatement.name }} (Consulta Individual)</h4>
+              <span class="seller-code">Código: <code>{{ searchedAffiliateStatement.code }}</code></span>
+            </div>
+          </div>
+          <div class="seller-stats">
+            <div class="s-stat">
+              <span>Vendas Realizadas:</span>
+              <strong>{{ searchedAffiliateStatement.salesCount }} pedidos</strong>
+            </div>
+            <div class="s-stat">
+              <span>Volume Total Gerado:</span>
+              <strong>R$ {{ searchedAffiliateStatement.totalSales.toFixed(2) }}</strong>
+            </div>
+            <div class="s-stat highlight">
+              <span>Comissão Acumulada:</span>
+              <strong class="comm-val">R$ {{ searchedAffiliateStatement.commissionEarned.toFixed(2) }}</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Grid de Afiliados Credenciados -->
+        <div *ngIf="isLoadingSellers" style="padding: 24px; text-align: center; color: #00f0ff;">
+          ⚡ Consultando extratos dos consultores no banco Neon...
+        </div>
+
+        <div class="sellers-grid" *ngIf="!isLoadingSellers">
           <div *ngFor="let s of sellers" class="seller-card card-glass">
             <div class="seller-head">
               <span class="seller-avatar">👩‍💼</span>
@@ -207,7 +273,7 @@
                 <strong>R$ {{ s.totalSales.toFixed(2) }}</strong>
               </div>
               <div class="s-stat highlight">
-                <span>Comissão a Pagar ({{ s.commissionRate * 100 }}%):</span>
+                <span>Comissão a Pagar ({{ (s.commissionRate * 100).toFixed(0) }}%):</span>
                 <strong class="comm-val">R$ {{ s.commissionEarned.toFixed(2) }}</strong>
               </div>
             </div>
