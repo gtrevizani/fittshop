@@ -15,6 +15,7 @@ export class HeaderComponent {
   @Output() searchEvent = new EventEmitter<string>();
   @Output() openRecommenderEvent = new EventEmitter<void>();
   @Output() toggleBackofficeEvent = new EventEmitter<void>();
+  @Output() openAuthEvent = new EventEmitter<void>();
 
   searchTerm = '';
 

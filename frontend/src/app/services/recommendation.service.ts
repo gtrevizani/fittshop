@@ -4,12 +4,13 @@ import { Observable, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { AthleteProfilePayload, RecommendationResult } from '../models/recommendation.model';
 import { ProductService } from './product.service';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class RecommendationService {
-  private apiUrl = 'http://localhost:8080/api/recommendations/calculate';
+  private apiUrl = `${environment.apiUrl}/recommendations/calculate`;
 
   constructor(private http: HttpClient, private productService: ProductService) {}
 

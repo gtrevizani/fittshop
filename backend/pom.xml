@@ -51,6 +51,22 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- Production Actuator Health & Metrics -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <!-- Database Migrations with Flyway -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
+        </dependency>
+
         <!-- JWT for Stateless Authentication -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>

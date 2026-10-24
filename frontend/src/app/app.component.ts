@@ -7,6 +7,7 @@ import { RecommenderComponent } from './components/recommender/recommender.compo
 import { CartDrawerComponent } from './components/cart-drawer/cart-drawer.component';
 import { CheckoutModalComponent } from './components/checkout-modal/checkout-modal.component';
 import { BackofficeComponent } from './components/backoffice/backoffice.component';
+import { AuthModalComponent } from './components/auth-modal/auth-modal.component';
 import { CartService } from './services/cart.service';
 import { AuthService } from './services/auth.service';
 
@@ -21,7 +22,8 @@ import { AuthService } from './services/auth.service';
     RecommenderComponent,
     CartDrawerComponent,
     CheckoutModalComponent,
-    BackofficeComponent
+    BackofficeComponent,
+    AuthModalComponent
   ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
@@ -31,6 +33,7 @@ export class AppComponent {
   searchQuery = '';
   showRecommenderModal = false;
   showBackoffice = false;
+  showAuthModal = false;
 
   constructor(public cartService: CartService, public authService: AuthService) {}
 

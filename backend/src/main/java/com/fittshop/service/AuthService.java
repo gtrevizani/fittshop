@@ -1,57 +1,62 @@
 package com.fittshop.service;
 
+import com.fittshop.config.JwtTokenProvider;
 import com.fittshop.domain.enums.RoleType;
 import com.fittshop.domain.model.Customer;
+import com.fittshop.domain.model.LoyaltyAccount;
 import com.fittshop.repository.CustomerRepository;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
+import com.fittshop.repository.LoyaltyAccountRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.crypto.SecretKey;
-import java.nio.charset.StandardCharsets;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
 @Service
+@Transactional
 public class AuthService {
 
     private final CustomerRepository customerRepository;
+    private final LoyaltyAccountRepository loyaltyAccountRepository;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final PasswordEncoder passwordEncoder;
 
-    @Value("${fittshop.security.jwt.secret}")
-    private String jwtSecret;
-
-    @Value("${fittshop.security.jwt.expiration-ms:3600000}")
-    private long jwtExpirationMs;
-
-    public AuthService(CustomerRepository customerRepository) {
+    public AuthService(CustomerRepository customerRepository,
+                       LoyaltyAccountRepository loyaltyAccountRepository,
+                       JwtTokenProvider jwtTokenProvider,
+                       PasswordEncoder passwordEncoder) {
         this.customerRepository = customerRepository;
+        this.loyaltyAccountRepository = loyaltyAccountRepository;
+        this.jwtTokenProvider = jwtTokenProvider;
+        this.passwordEncoder = passwordEncoder;
     }
 
-    public Map<String, Object> authenticate(String email, String password) {
+    public Map<String, Object> authenticate(String email, String rawPassword) {
         Optional<Customer> optionalCustomer = customerRepository.findByEmail(email);
 
         if (optionalCustomer.isEmpty()) {
-            throw new IllegalArgumentException("Credenciais inválidas.");
+            throw new IllegalArgumentException("Credenciais inválidas: e-mail não encontrado.");
         }
 
         Customer customer = optionalCustomer.get();
 
-        SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
-        Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + jwtExpirationMs);
+        // Checa compatibilidade BCrypt ou fallback de dev
+        boolean matches = passwordEncoder.matches(rawPassword, customer.getPassword())
+                || customer.getPassword().equals(rawPassword)
+                || customer.getPassword().equals("{noop}" + rawPassword);
 
-        String token = Jwts.builder()
-                .subject(customer.getEmail())
-                .claim("role", customer.getRole().name())
-                .claim("name", customer.getName())
-                .claim("userId", customer.getId())
-                .issuedAt(now)
-                .expiration(expiryDate)
-                .signWith(key)
-                .compact();
+        if (!matches) {
+            throw new IllegalArgumentException("Credenciais inválidas: senha incorreta.");
+        }
+
+        String token = jwtTokenProvider.generateToken(
+                customer.getEmail(),
+                customer.getRole().name(),
+                customer.getName(),
+                customer.getId()
+        );
 
         Map<String, Object> response = new HashMap<>();
         response.put("token", token);
@@ -61,5 +66,20 @@ public class AuthService {
         response.put("userId", customer.getId());
 
         return response;
+    }
+
+    public Map<String, Object> register(String name, String email, String password, String phone, String cpf) {
+        if (customerRepository.findByEmail(email).isPresent()) {
+            throw new IllegalArgumentException("E-mail já cadastrado na plataforma.");
+        }
+
+        String encodedPassword = passwordEncoder.encode(password);
+        Customer customer = new Customer(name, email, encodedPassword, cpf, phone, RoleType.ROLE_CUSTOMER);
+        Customer saved = customerRepository.save(customer);
+
+        // Inicializa conta de fidelidade com 50 FittCoins de boas-vindas
+        loyaltyAccountRepository.save(new LoyaltyAccount(saved.getId(), 50, "BRONZE"));
+
+        return authenticate(email, password);
     }
 }

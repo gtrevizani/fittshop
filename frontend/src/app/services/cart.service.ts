@@ -4,12 +4,13 @@ import { CartItem, CheckoutRequestPayload, CheckoutResult, FreightQuote } from '
 import { Product } from '../models/product.model';
 import { Observable, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CartService {
-  private checkoutApi = 'http://localhost:8080/api/checkout';
+  private checkoutApi = `${environment.apiUrl}/checkout`;
 
   items = signal<CartItem[]>([]);
   isCartOpen = signal<boolean>(false);

@@ -1,0 +1,95 @@
+<div class="modal-overlay" (click)="closeEvent.emit()">
+  <div class="auth-modal card-glass" (click)="$event.stopPropagation()">
+    <!-- Header -->
+    <div class="auth-header">
+      <div class="brand-head">
+        <span class="auth-icon">🏋️</span>
+        <h2>{{ mode === 'LOGIN' ? 'Entrar no Clube FittShop' : 'Cadastro de Novo Atleta' }}</h2>
+      </div>
+      <button class="close-btn" (click)="closeEvent.emit()">✕</button>
+    </div>
+
+    <!-- Mode Selector Tabs -->
+    <div class="auth-tabs">
+      <button 
+        class="auth-tab" 
+        [class.active]="mode === 'LOGIN'"
+        (click)="mode = 'LOGIN'; errorMessage = ''; successMessage = ''">
+        Já tenho Conta (Login)
+      </button>
+      <button 
+        class="auth-tab" 
+        [class.active]="mode === 'REGISTER'"
+        (click)="mode = 'REGISTER'; errorMessage = ''; successMessage = ''">
+        Criar Conta (+50 FittCoins)
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="auth-body">
+      <div *ngIf="errorMessage" class="auth-alert error">
+        {{ errorMessage }}
+      </div>
+      <div *ngIf="successMessage" class="auth-alert success">
+        {{ successMessage }}
+      </div>
+
+      <!-- LOGIN FORM -->
+      <form *ngIf="mode === 'LOGIN'" (ngSubmit)="submitLogin()" class="auth-form">
+        <div class="form-field">
+          <label>E-mail do Atleta</label>
+          <input type="email" placeholder="seu-email@dominio.com" [(ngModel)]="loginEmail" name="email" required>
+        </div>
+
+        <div class="form-field">
+          <label>Senha de Acesso</label>
+          <input type="password" placeholder="••••••••" [(ngModel)]="loginPassword" name="password" required>
+        </div>
+
+        <button type="submit" class="btn-primary auth-btn" [disabled]="isLoading">
+          <span *ngIf="!isLoading">Acessar Minha Conta</span>
+          <span *ngIf="isLoading">Validando Credenciais...</span>
+        </button>
+
+        <p class="quick-credentials-hint">
+          💡 <em>Contas de demonstração:</em><br>
+          Atleta: <code>atleta&#64;fittshop.com.br</code> | Estoquista: <code>estoquista&#64;fittshop.com.br</code> | Caixa: <code>caixa&#64;fittshop.com.br</code>
+        </p>
+      </form>
+
+      <!-- REGISTER FORM -->
+      <form *ngIf="mode === 'REGISTER'" (ngSubmit)="submitRegister()" class="auth-form">
+        <div class="form-field">
+          <label>Nome Completo</label>
+          <input type="text" placeholder="Ex: Lucas Silva" [(ngModel)]="registerName" name="name" required>
+        </div>
+
+        <div class="form-field">
+          <label>E-mail</label>
+          <input type="email" placeholder="lucas@exemplo.com" [(ngModel)]="registerEmail" name="email" required>
+        </div>
+
+        <div class="row-2">
+          <div class="form-field">
+            <label>Senha</label>
+            <input type="password" placeholder="Mínimo 6 caracteres" [(ngModel)]="registerPassword" name="password" required>
+          </div>
+          <div class="form-field">
+            <label>Telefone / WhatsApp</label>
+            <input type="text" placeholder="(11) 98888-7777" [(ngModel)]="registerPhone" name="phone">
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label>CPF (Para emissão de NF-e)</label>
+          <input type="text" placeholder="000.000.000-00" [(ngModel)]="registerCpf" name="cpf">
+        </div>
+
+        <button type="submit" class="btn-primary auth-btn" [disabled]="isLoading">
+          <span *ngIf="!isLoading">Criar Conta e Resgatar 50 FittCoins</span>
+          <span *ngIf="isLoading">Gravando Atleta no Banco de Dados...</span>
+        </button>
+      </form>
+    </div>
+  </div>
+</div>

@@ -71,6 +71,12 @@
           </div>
         </div>
 
+        <!-- User Profile Button -->
+        <button class="user-profile-btn" (click)="openAuthEvent.emit()" title="Minha Conta / Autenticação">
+          <span>👤</span>
+          <span class="user-name-text">{{ authService.currentUserName() }}</span>
+        </button>
+
         <!-- Cart Button -->
         <button class="cart-btn" (click)="cartService.isCartOpen.set(true)" aria-label="Abrir Sacola de Compras">
           <div class="cart-icon-wrapper">

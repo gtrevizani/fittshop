@@ -3,7 +3,8 @@
   <app-header 
     (searchEvent)="onSearch($event)"
     (openRecommenderEvent)="showRecommenderModal = true"
-    (toggleBackofficeEvent)="toggleBackoffice()">
+    (toggleBackofficeEvent)="toggleBackoffice()"
+    (openAuthEvent)="showAuthModal = true">
   </app-header>
 
   <main>
@@ -37,6 +38,9 @@
 
   <!-- Checkout & Atomic Lease Modal -->
   <app-checkout-modal *ngIf="cartService.isCheckoutModalOpen()"></app-checkout-modal>
+
+  <!-- Athlete Auth / Login & Register Modal -->
+  <app-auth-modal *ngIf="showAuthModal" (closeEvent)="showAuthModal = false"></app-auth-modal>
 
   <!-- Modern Fitness Footer -->
   <footer class="fitt-footer">

@@ -3,14 +3,16 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { Product } from '../models/product.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProductService {
-  private apiUrl = 'http://localhost:8080/api/products';
+  private apiUrl = `${environment.apiUrl}/products`;
+  private inventoryApiUrl = `${environment.apiUrl}/inventory`;
 
-  // Seed fallback catalog for out-of-the-box UI responsiveness
+  // Fallback initial products
   private initialProducts: Product[] = [
     {
       id: 1,
@@ -25,7 +27,7 @@ export class ProductService {
       stockQuantity: 50,
       minStockThreshold: 5,
       batchCode: 'LOTE-WH-2026A',
-      expirationDate: '2027-10-30',
+      expirationDate: '2028-06-30',
       weightKg: 0.9
     },
     {
@@ -41,7 +43,7 @@ export class ProductService {
       stockQuantity: 80,
       minStockThreshold: 10,
       batchCode: 'LOTE-CR-2026B',
-      expirationDate: '2028-04-15',
+      expirationDate: '2028-12-31',
       weightKg: 0.3
     },
     {
@@ -57,7 +59,7 @@ export class ProductService {
       stockQuantity: 35,
       minStockThreshold: 5,
       batchCode: 'LOTE-VN-2026C',
-      expirationDate: '2027-08-20',
+      expirationDate: '2027-10-15',
       weightKg: 0.35
     },
     {
@@ -73,7 +75,7 @@ export class ProductService {
       stockQuantity: 40,
       minStockThreshold: 5,
       batchCode: 'LOTE-IZ-2026D',
-      expirationDate: '2027-12-10',
+      expirationDate: '2028-02-28',
       weightKg: 0.9
     },
     {
@@ -137,7 +139,7 @@ export class ProductService {
       stockQuantity: 30,
       minStockThreshold: 5,
       batchCode: 'LOTE-CB-01',
-      expirationDate: '2027-10-30',
+      expirationDate: '2028-06-30',
       weightKg: 1.6
     }
   ];
@@ -156,7 +158,6 @@ export class ProductService {
         }
       }),
       catchError(() => {
-        // Fallback gracefully to seed products
         return of(this.initialProducts);
       })
     ).subscribe();
@@ -164,6 +165,30 @@ export class ProductService {
 
   getProducts(): Product[] {
     return this.productsSignal();
+  }
+
+  adjustStock(productId: number, quantityDelta: number, batchCode?: string, expirationDate?: string): Observable<Product> {
+    const payload = {
+      productId,
+      quantityDelta,
+      operationType: quantityDelta > 0 ? 'REPOSICAO' : 'BAIXA_MANUAL',
+      batchCode: batchCode || 'LOTE-REMOTE',
+      expirationDate: expirationDate || '2028-12-31'
+    };
+
+    return this.http.post<Product>(`${this.inventoryApiUrl}/adjust`, payload).pipe(
+      tap(updated => {
+        this.productsSignal.update(items =>
+          items.map(p => p.id === productId ? { ...p, stockQuantity: updated.stockQuantity } : p)
+        );
+      }),
+      catchError(() => {
+        // Fallback local se estiver offline
+        this.adjustStockLocal(productId, quantityDelta);
+        const p = this.productsSignal().find(x => x.id === productId);
+        return of(p!);
+      })
+    );
   }
 
   adjustStockLocal(productId: number, delta: number): void {

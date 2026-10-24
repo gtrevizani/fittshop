@@ -222,6 +222,32 @@
   border-radius: var(--radius-full);
 }
 
+.user-profile-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  padding: 8px 14px;
+  border-radius: var(--radius-full);
+  font-size: 0.82rem;
+  font-weight: 700;
+  max-width: 170px;
+}
+
+.user-profile-btn:hover {
+  border-color: var(--accent-lime);
+  background: rgba(204, 255, 0, 0.08);
+  color: var(--accent-lime);
+}
+
+.user-name-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .coin-info {
   display: flex;
   flex-direction: column;

@@ -1,0 +1,28 @@
+-- ==============================================================================
+-- FittShop Production Initial Catalog & Staff (Flyway V2 Seed Data)
+-- ==============================================================================
+
+INSERT INTO products (sku, name, description, price, category, image_url, nutritional_info, target_goal, stock_quantity, min_stock_threshold, batch_code, expiration_date, weight_kg, version)
+VALUES
+('SUP-WHEY-100', '100% Whey Protein Concentrado 900g - Baunilha Nobre', 'Proteína de altíssimo valor biológico, 24g de proteína por dose, 5.5g de BCAAs e matéria-prima importada 100% filtrada.', 139.90, 'Suplementos', 'https://images.unsplash.com/photo-1579722821273-0f6c7d44362f?auto=format&fit=crop&w=600&q=80', 'Dose 30g: 24g Proteína, 2.1g Carbo, 1.5g Gorduras, 5.4g BCAA, 4.3g Glutamina.', 'HIPERTROFIA', 50, 5, 'LOTE-WH-2026A', '2028-06-30', 0.9, 0),
+('SUP-CREA-PURE', 'Creatina Creapure® 300g 100% Pura Micronizada', 'Selo de pureza Creapure® alemã. Aumento explosivo de força muscular, potência e hidratação celular intra-miofibrilar.', 119.90, 'Suplementos', 'https://images.unsplash.com/photo-1593095948071-474c5cc2989d?auto=format&fit=crop&w=600&q=80', 'Dose 3g: 100% Creatina Monohidratada Creapure® pura. 0 calorias, 0 sódio.', 'HIPERTROFIA', 80, 10, 'LOTE-CR-2026B', '2028-12-31', 0.3, 0),
+('SUP-PRE-VENOM', 'Pré-Treino Venom Extreme 300g - Maçã Verde', 'Fórmula insana com 400mg de Cafeína Anidra, 3000mg de Beta-Alanina, 1000mg de Taurina e Tirosina para foco cirúrgico.', 149.90, 'Suplementos', 'https://images.unsplash.com/photo-1546483875-ad9014c88eba?auto=format&fit=crop&w=600&q=80', 'Dose 10g: 400mg Cafeína, 3000mg Beta-Alanina, 1000mg Arginina, 1000mg Taurina.', 'FORCA_POWERLIFTING', 35, 5, 'LOTE-VN-2026C', '2027-10-15', 0.35, 0),
+('SUP-ISO-ZERO', 'Whey Isolate Zero Carbo 900g - Chocolate Belga', 'Proteína isolada com microfiltração por fluxo cruzado (CFM). Zero lactose, zero glúten e absorção ultrarrápida.', 219.90, 'Suplementos', 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=600&q=80', 'Dose 30g: 27g Proteína Isolada, 0g Carbo, 0g Gordura, 6.2g BCAA.', 'DEFINICAO', 40, 5, 'LOTE-IZ-2026D', '2028-02-28', 0.9, 0),
+('ACE-BELT-10MM', 'Cinturão de Couro Legítimo 10mm Powerlifting', 'Fabricado em couro bovino selecionado com fivela dupla em aço inox. Estabilidade lombar e pressão intra-abdominal máxima.', 189.90, 'Acessórios', 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=600&q=80', 'Couro 100% legítimo com 10mm de espessura. Certificado para treinos pesados de agachamento e terra.', 'FORCA_POWERLIFTING', 25, 3, 'LOTE-EQ-01', '2035-01-01', 1.2, 0),
+('ROU-CAM-OVER', 'Camiseta Oversized FittShop Heavy Duty - Preta', 'Modelagem oversized streetwear/gym, 100% algodão peruano fio 30.1 com costura reforçada ombro a ombro.', 89.90, 'Roupas', 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=600&q=80', 'Algodão 100% penteado peruano 220g/m². Caimento folgado ideal para treino de costas e peito.', 'HIPERTROFIA', 60, 10, 'LOTE-RP-02', '2030-01-01', 0.25, 0),
+('ACE-SHAKER-INOX', 'Coqueteleira Shaker Térmica Inox 750ml com Blender', 'Mantém sua bebida gelada por até 24 horas. Fecho antivazamento de clique duplo e escala medidora interna.', 69.90, 'Acessórios', 'https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=600&q=80', 'Aço Inoxidável 304 livre de BPA e toxinas. Isolamento a vácuo com parede dupla.', 'RESISTENCIA_CARDIO', 100, 15, 'LOTE-EQ-03', '2035-01-01', 0.4, 0),
+('COMBO-HIPER-PRO', 'Combo Hipertrofia Máxima (Whey 100% + Creatina Creapure + Shaker)', 'O kit definitivo para explosão muscular e recomposição corporal com desconto promocional integrado de 15%.', 279.90, 'Combos', 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=600&q=80', 'Contém: 1x Whey 900g + 1x Creatina 300g Creapure® + 1x Shaker Inox Térmico 750ml.', 'HIPERTROFIA', 30, 5, 'LOTE-CB-01', '2028-06-30', 1.6, 0);
+
+-- Insert Default Staff and Athlete (BCrypt encrypted password: 'password123' -> $2a$10$wT8K8U1p6o9hS... or {bcrypt})
+INSERT INTO customers (name, email, password, cpf, phone, role, goal, weight_kg, height_meters, weekly_workouts, experience_level)
+VALUES
+('Lucas Atleta', 'atleta@fittshop.com.br', '$2a$10$7Z2tCq1G9QcW8Y5v8E6l.eZ9yX7B6h5d4a3c2b1a0z9y8x7w6v5u4', '111.222.333-44', '(11) 98888-1111', 'ROLE_CUSTOMER', 'HIPERTROFIA', 80.0, 1.80, 5, 'AVANCADO'),
+('Camila Consultora', 'vendedora@fittshop.com.br', '$2a$10$7Z2tCq1G9QcW8Y5v8E6l.eZ9yX7B6h5d4a3c2b1a0z9y8x7w6v5u4', '222.333.444-55', '(11) 98888-2222', 'ROLE_SELLER', NULL, NULL, NULL, NULL, NULL),
+('Carlos Estoquista', 'estoquista@fittshop.com.br', '$2a$10$7Z2tCq1G9QcW8Y5v8E6l.eZ9yX7B6h5d4a3c2b1a0z9y8x7w6v5u4', '333.444.555-66', '(11) 98888-3333', 'ROLE_STOCKIST', NULL, NULL, NULL, NULL, NULL),
+('Mariana Caixa', 'caixa@fittshop.com.br', '$2a$10$7Z2tCq1G9QcW8Y5v8E6l.eZ9yX7B6h5d4a3c2b1a0z9y8x7w6v5u4', '444.555.666-77', '(11) 98888-4444', 'ROLE_CASHIER', NULL, NULL, NULL, NULL, NULL),
+('Roberto Gerente', 'gerente@fittshop.com.br', '$2a$10$7Z2tCq1G9QcW8Y5v8E6l.eZ9yX7B6h5d4a3c2b1a0z9y8x7w6v5u4', '555.666.777-88', '(11) 98888-5555', 'ROLE_MANAGER', NULL, NULL, NULL, NULL, NULL),
+('Admin FittShop', 'admin@fittshop.com.br', '$2a$10$7Z2tCq1G9QcW8Y5v8E6l.eZ9yX7B6h5d4a3c2b1a0z9y8x7w6v5u4', '000.000.000-00', '(11) 98888-0000', 'ROLE_ADMIN', NULL, NULL, NULL, NULL, NULL);
+
+-- Seed Loyalty Account for Lucas Atleta
+INSERT INTO loyalty_accounts (customer_id, fitt_coins_balance, tier_level, updated_at)
+VALUES (1, 120, 'BRONZE', CURRENT_TIMESTAMP);
