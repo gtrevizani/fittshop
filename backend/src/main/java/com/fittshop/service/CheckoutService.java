@@ -37,6 +37,7 @@ public class CheckoutService {
     private final com.fittshop.service.freight.FreightCarrierService freightCarrierService;
     private final LoyaltyFittCoinsEngine loyaltyEngine;
     private final com.fittshop.service.payment.PaymentGatewayService paymentGatewayService;
+    private final com.fittshop.service.affiliate.AffiliateService affiliateService;
 
     @Value("${fittshop.business.free-shipping-threshold-sudeste:199.00}")
     private BigDecimal thresholdSudeste;
@@ -62,7 +63,8 @@ public class CheckoutService {
                            FreightCalculationEngine freightEngine,
                            com.fittshop.service.freight.FreightCarrierService freightCarrierService,
                            LoyaltyFittCoinsEngine loyaltyEngine,
-                           com.fittshop.service.payment.PaymentGatewayService paymentGatewayService) {
+                           com.fittshop.service.payment.PaymentGatewayService paymentGatewayService,
+                           com.fittshop.service.affiliate.AffiliateService affiliateService) {
         this.productRepository = productRepository;
         this.orderRepository = orderRepository;
         this.customerRepository = customerRepository;
@@ -73,6 +75,7 @@ public class CheckoutService {
         this.freightCarrierService = freightCarrierService;
         this.loyaltyEngine = loyaltyEngine;
         this.paymentGatewayService = paymentGatewayService;
+        this.affiliateService = affiliateService;
     }
 
     public FreightResponse calculateFreight(FreightRequest request) {
@@ -192,6 +195,14 @@ public class CheckoutService {
         // 8. Processar Pagamento via Gateway Real (Mercado Pago / EMVCo PIX)
         com.fittshop.domain.dto.PaymentResult paymentResult = paymentGatewayService.processPayment(order, request.getPaymentMethod(), customer);
         order.setExternalTransactionId(paymentResult.getTransactionId());
+
+        // 9. Registrar comissão de afiliado/personal trainer se aplicável
+        String affiliateCandidate = (request.getSellerCode() != null && !request.getSellerCode().isBlank())
+                ? request.getSellerCode() : request.getCouponCode();
+        if (affiliateCandidate != null && !affiliateCandidate.isBlank()) {
+            affiliateService.registerOrderCommission(order, affiliateCandidate);
+        }
+
         orderRepository.save(order);
 
         // 9. Construir Resposta com payload de pagamento oficial
@@ -235,6 +246,9 @@ public class CheckoutService {
                 acc.creditPoints(order.getFittCoinsEarned());
                 loyaltyAccountRepository.save(acc);
             }
+
+            // Aprova comissão do consultor/afiliado
+            affiliateService.approveCommissionForOrder(order.getOrderNumber());
 
             return orderRepository.save(order);
         }
