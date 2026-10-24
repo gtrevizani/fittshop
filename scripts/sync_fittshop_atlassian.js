@@ -76,19 +76,22 @@ function request(method, pathUrl, body = null) {
 async function sync() {
   console.log(`📡 Conectando ao Atlassian Cloud (${domain}) para sincronizar o FittShop...`);
   
+  const projectKey = process.env.JIRA_PROJECT_KEY || 'FITT';
+  const spaceKey = process.env.CONFLUENCE_SPACE_KEY || 'FITT';
+
   // 1. Verifica projeto
-  const projRes = await request('GET', `/rest/api/3/project/AGENTM`);
+  const projRes = await request('GET', `/rest/api/3/project/${projectKey}`);
   if (projRes.status === 200) {
     console.log(`✔ [Jira] Projeto verificado: ${projRes.body.key} - ${projRes.body.name}`);
   }
 
   // 2. Verifica espaço no Confluence
-  const spaceRes = await request('GET', `/wiki/rest/api/space/AGENTM`);
+  const spaceRes = await request('GET', `/wiki/rest/api/space/${spaceKey}`);
   if (spaceRes.status === 200) {
     console.log(`✔ [Confluence] Espaço verificado: ${spaceRes.body.key} - ${spaceRes.body.name}`);
   }
 
-  console.log('🔗 Sincronização DevSecOps ativa e operante!');
+  console.log('🔗 Sincronização oficial do FittShop ativa e operante!');
 }
 
 sync().catch(console.error);
