@@ -28,3 +28,4 @@ Thumbs.db
 *.key
 backend/run_neon.ps1
 .cache/
+scratch/
