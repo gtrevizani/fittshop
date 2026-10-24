@@ -26,7 +26,7 @@ export interface AffiliateStatementItem {
   styleUrls: ['./backoffice.component.css']
 })
 export class BackofficeComponent implements OnInit {
-  activeTab: 'ESTOQUE' | 'CAIXA' | 'VENDEDORAS' | 'GERENCIA' = 'ESTOQUE';
+  activeTab: 'ESTOQUE' | 'CAIXA' | 'VENDEDORAS' | 'GERENCIA' | 'FULFILLMENT' = 'ESTOQUE';
 
   // Estoquista Form
   selectedProductId: number | null = null;
@@ -35,10 +35,11 @@ export class BackofficeComponent implements OnInit {
   newExpirationDate = '2028-06-30';
   estoqueSuccessMessage = '';
 
-  // Caixa state
+  // Caixa & Fulfillment state
   caixaOrders: any[] = [];
   isLoadingOrders = false;
   caixaActionMessage = '';
+  selectedShippingLabel: any = null;
 
   // Vendedoras / Afiliados state
   sellers: AffiliateStatementItem[] = [];
@@ -81,9 +82,12 @@ export class BackofficeComponent implements OnInit {
           this.caixaOrders = orders.map(o => ({
             orderNumber: o.orderNumber,
             customer: o.customerCpf ? `Atleta (${o.customerCpf})` : `Atleta #${o.customerId}`,
+            deliveryAddress: o.deliveryAddress,
+            deliveryZipCode: o.deliveryZipCode,
             total: o.totalAmount,
             method: o.paymentMethod,
             status: o.status,
+            items: o.items || [],
             itemsCount: o.items ? o.items.length : 1,
             tracking: o.trackingCode || (o.status === 'EXPEDIDO' ? 'FIT' + Math.abs((o.id || 1) * 8921).toString() + 'BR' : 'AGUARDANDO')
           }));
@@ -233,6 +237,60 @@ export class BackofficeComponent implements OnInit {
         setTimeout(() => (this.caixaActionMessage = ''), 4000);
       }
     });
+  }
+
+  startSeparation(orderNumber: string): void {
+    this.http.patch(`${environment.apiUrl}/orders/${orderNumber}/status?status=EM_SEPARACAO`, {}).subscribe({
+      next: () => {
+        this.caixaActionMessage = `📦 Pedido ${orderNumber} movido para Em Separação no CD!`;
+        this.fetchOrders();
+        setTimeout(() => (this.caixaActionMessage = ''), 4000);
+      },
+      error: (err) => {
+        this.caixaActionMessage = `⚠️ Erro ao atualizar status (${err?.status || '500'}).`;
+        setTimeout(() => (this.caixaActionMessage = ''), 4000);
+      }
+    });
+  }
+
+  fulfillAndDispatch(orderNumber: string): void {
+    this.http.post(`${environment.apiUrl}/orders/${orderNumber}/fulfill`, {}).subscribe({
+      next: () => {
+        this.caixaActionMessage = `🚚 Pedido ${orderNumber} expedido e notificação de rastreio enviada ao atleta!`;
+        this.fetchOrders();
+        setTimeout(() => (this.caixaActionMessage = ''), 4000);
+      },
+      error: (err) => {
+        this.caixaActionMessage = `⚠️ Erro ao expedir pedido (${err?.status || '500'}).`;
+        setTimeout(() => (this.caixaActionMessage = ''), 4000);
+      }
+    });
+  }
+
+  openShippingLabel(order: any): void {
+    const tracking = order.tracking && order.tracking !== 'AGUARDANDO'
+      ? order.tracking
+      : ('BR-ME' + (10000000 + Math.floor(Math.random() * 90000000)));
+
+    this.selectedShippingLabel = {
+      orderNumber: order.orderNumber,
+      trackingCode: tracking,
+      recipientName: order.customer,
+      recipientAddress: order.deliveryAddress || 'Av. Paulista, 1500 - Apto 82, Bela Vista, São Paulo - SP',
+      recipientZip: order.deliveryZipCode || '01310-100',
+      senderName: 'FITTSHOP SUPLEMENTOS NUTRICIONAIS LTDA (CD CENTRAL)',
+      senderAddress: 'Av. Paulista, 1000 - Bela Vista, São Paulo - SP, CEP 01310-100',
+      carrier: 'MELHOR ENVIO / CORREIOS - CONTRATO SEDEX EMPRESA',
+      weightKg: '1.45 kg'
+    };
+  }
+
+  closeShippingLabel(): void {
+    this.selectedShippingLabel = null;
+  }
+
+  printShippingLabel(): void {
+    window.print();
   }
 
   getSelectedProduct(): Product | undefined {

@@ -18,13 +18,16 @@ import java.util.List;
 public class OrderController {
 
     private final OrderRepository orderRepository;
+    private final CustomerRepository customerRepository;
     private final CheckoutService checkoutService;
     private final com.fittshop.service.fiscal.FiscalInvoiceService fiscalInvoiceService;
 
     public OrderController(OrderRepository orderRepository,
+                           CustomerRepository customerRepository,
                            CheckoutService checkoutService,
                            com.fittshop.service.fiscal.FiscalInvoiceService fiscalInvoiceService) {
         this.orderRepository = orderRepository;
+        this.customerRepository = customerRepository;
         this.checkoutService = checkoutService;
         this.fiscalInvoiceService = fiscalInvoiceService;
     }
@@ -69,5 +72,24 @@ public class OrderController {
     @Operation(summary = "Gera e consulta o espelho DANFE / NF-e com chave SEFAZ de 44 dígitos")
     public ResponseEntity<com.fittshop.domain.dto.DanfeDto> getOrderDanfe(@PathVariable String orderNumber) {
         return ResponseEntity.ok(fiscalInvoiceService.generateDanfe(orderNumber));
+    }
+
+    @PostMapping("/{orderNumber}/fulfill")
+    @Operation(summary = "Realiza a expedição do pedido com atribuição de código de rastreamento oficial")
+    public ResponseEntity<Order> fulfillOrder(
+            @PathVariable String orderNumber,
+            @RequestParam(required = false) String trackingCode) {
+        Order order = orderRepository.findByOrderNumber(orderNumber)
+                .orElseThrow(() -> new IllegalArgumentException("Pedido não encontrado: " + orderNumber));
+        if (trackingCode != null && !trackingCode.isBlank()) {
+            order.setTrackingCode(trackingCode);
+        } else if (order.getTrackingCode() == null || order.getTrackingCode().isBlank()) {
+            order.setTrackingCode("BR-ME" + (10000000 + new java.util.Random().nextInt(90000000)));
+        }
+        order.setStatus(OrderStatus.EXPEDIDO);
+        Order saved = orderRepository.save(order);
+        Customer customer = customerRepository.findById(order.getCustomerId()).orElse(null);
+        checkoutService.getNotificationService().notifyOrderStatusChanged(saved, customer, OrderStatus.EXPEDIDO);
+        return ResponseEntity.ok(saved);
     }
 }

@@ -36,6 +36,12 @@
           (click)="activeTab = 'GERENCIA'">
           📊 Gerência & Faturamento
         </button>
+        <button 
+          class="bo-tab" 
+          [class.active]="activeTab === 'FULFILLMENT'"
+          (click)="activeTab = 'FULFILLMENT'">
+          🚚 Fulfillment & Expedição WMS
+        </button>
       </div>
     </div>
 
@@ -350,6 +356,137 @@
           <span class="m-title">FittCoins em Circulação</span>
           <span class="m-val">34.200 FittCoins</span>
           <span class="m-growth">R$ 17.100 em cashback retido</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: FULFILLMENT & EXPEDIÇÃO WMS -->
+    <div *ngIf="activeTab === 'FULFILLMENT'" class="tab-content">
+      <div class="panel card-glass">
+        <div class="panel-header-row">
+          <div>
+            <h3>📦 Esteira de Separação & Expedição Logística (WMS)</h3>
+            <p class="panel-desc">Gestão de picking, packing, emissão de etiquetas e rastreamento oficial Melhor Envio / Correios.</p>
+          </div>
+          <button class="btn-refresh" (click)="fetchOrders()">🔄 Atualizar Pedidos</button>
+        </div>
+
+        <div *ngIf="caixaActionMessage" class="alert-success">
+          {{ caixaActionMessage }}
+        </div>
+
+        <div class="fulfillment-table-container">
+          <table class="bo-table">
+            <thead>
+              <tr>
+                <th>Pedido</th>
+                <th>Destinatário & CEP</th>
+                <th>Endereço de Entrega</th>
+                <th>Itens</th>
+                <th>Valor Total</th>
+                <th>Status Atual</th>
+                <th>Rastreamento</th>
+                <th>Ações de Fulfillment</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let order of caixaOrders">
+                <td><strong>{{ order.orderNumber }}</strong></td>
+                <td>
+                  <span class="dest-name">{{ order.customer }}</span>
+                  <span class="dest-cep">CEP: {{ order.deliveryZipCode || '01310-100' }}</span>
+                </td>
+                <td class="addr-cell">{{ order.deliveryAddress || 'Av. Paulista, 1500 - Bela Vista, SP' }}</td>
+                <td>{{ order.itemsCount }} item(s)</td>
+                <td><strong>R$ {{ order.total.toFixed(2) }}</strong></td>
+                <td>
+                  <span class="status-pill" [ngClass]="'status-' + order.status.toLowerCase()">
+                    {{ order.status }}
+                  </span>
+                </td>
+                <td>
+                  <code class="tracking-tag">{{ order.tracking }}</code>
+                </td>
+                <td class="action-cell">
+                  <button 
+                    *ngIf="order.status === 'PAGO'"
+                    class="btn-fulfill-sep"
+                    (click)="startSeparation(order.orderNumber)">
+                    📦 Iniciar Separação
+                  </button>
+
+                  <button 
+                    *ngIf="order.status === 'EM_SEPARACAO'"
+                    class="btn-fulfill-disp"
+                    (click)="fulfillAndDispatch(order.orderNumber)">
+                    🚚 Expedir & Rastrear
+                  </button>
+
+                  <button 
+                    *ngIf="order.status === 'PAGO' || order.status === 'EM_SEPARACAO' || order.status === 'EXPEDIDO'"
+                    class="btn-fulfill-label"
+                    (click)="openShippingLabel(order)">
+                    🏷️ Imprimir Etiqueta
+                  </button>
+
+                  <span *ngIf="order.status === 'AGUARDANDO_PAGAMENTO'" class="txt-muted">
+                    Aguardando Pagamento
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL ETIQUETA DE ENVIO (CORREIOS / MELHOR ENVIO) -->
+  <div class="label-modal-overlay" *ngIf="selectedShippingLabel" (click)="closeShippingLabel()">
+    <div class="label-modal card-glass" (click)="$event.stopPropagation()">
+      <div class="label-modal-header">
+        <h3>Etiqueta Oficial de Despacho Logístico</h3>
+        <div class="label-actions">
+          <button class="btn-print" (click)="printShippingLabel()">🖨️ Imprimir Etiqueta</button>
+          <button class="close-btn" (click)="closeShippingLabel()">✕</button>
+        </div>
+      </div>
+
+      <!-- Printable Shipping Label -->
+      <div class="shipping-label-printable">
+        <div class="label-carrier-strip">
+          <div class="carrier-brand">
+            <span class="carrier-logo">📦 MELHOR ENVIO</span>
+            <span class="carrier-service">{{ selectedShippingLabel.carrier }}</span>
+          </div>
+          <div class="weight-badge">PESO: {{ selectedShippingLabel.weightKg }}</div>
+        </div>
+
+        <div class="label-barcode-zone">
+          <div class="barcode-graphic">
+            <div class="bar bar-thin"></div><div class="bar bar-thick"></div><div class="bar bar-thin"></div>
+            <div class="bar bar-thick"></div><div class="bar bar-med"></div><div class="bar bar-thin"></div>
+            <div class="bar bar-thick"></div><div class="bar bar-thin"></div><div class="bar bar-med"></div>
+            <div class="bar bar-thick"></div><div class="bar bar-thin"></div><div class="bar bar-thick"></div>
+          </div>
+          <code class="barcode-text">{{ selectedShippingLabel.trackingCode }}</code>
+        </div>
+
+        <div class="label-recipient-box">
+          <span class="zone-label">DESTINATÁRIO:</span>
+          <h4>{{ selectedShippingLabel.recipientName }}</h4>
+          <p>{{ selectedShippingLabel.recipientAddress }}</p>
+          <div class="cep-highlight-box">
+            <span>CEP:</span>
+            <strong>{{ selectedShippingLabel.recipientZip }}</strong>
+          </div>
+        </div>
+
+        <div class="label-sender-box">
+          <span class="zone-label">REMETENTE:</span>
+          <p><strong>{{ selectedShippingLabel.senderName }}</strong></p>
+          <p>{{ selectedShippingLabel.senderAddress }}</p>
+          <span class="order-ref">REF PEDIDO: {{ selectedShippingLabel.orderNumber }}</span>
         </div>
       </div>
     </div>
