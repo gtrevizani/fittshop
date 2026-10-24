@@ -1,17 +1,17 @@
 <div class="modal-overlay" (click)="closeEvent.emit()">
-  <div class="orders-modal card-glass" (click)="$event.stopPropagation()">
+  <div class="orders-modal card-glass" role="dialog" aria-modal="true" aria-labelledby="orders-dialog-title" (click)="$event.stopPropagation()">
     <!-- Header -->
     <div class="orders-header">
       <div class="brand-head">
         <span class="orders-icon">📦</span>
         <div>
-          <h2>Central de Pedidos do Atleta</h2>
+          <h2 id="orders-dialog-title">Central de Pedidos do Atleta</h2>
           <span class="user-sub">Histórico & Rastreamento em Tempo Real de <strong>{{ authService.currentUserName() }}</strong></span>
         </div>
       </div>
       <div class="header-actions">
-        <button class="refresh-btn" (click)="loadOrders()" title="Atualizar Pedidos">🔄 Atualizar</button>
-        <button class="close-btn" (click)="closeEvent.emit()">✕</button>
+        <button class="refresh-btn" (click)="loadOrders()" title="Atualizar Pedidos" aria-label="Atualizar lista de pedidos">🔄 Atualizar</button>
+        <button class="close-btn" (click)="closeEvent.emit()" aria-label="Fechar janela de pedidos">✕</button>
       </div>
     </div>
 
@@ -90,16 +90,16 @@
 
   <!-- DANFE / NF-e Modal Overlay -->
   <div class="danfe-modal-overlay" *ngIf="selectedDanfe || isLoadingDanfe || danfeError" (click)="closeDanfe()">
-    <div class="danfe-modal card-glass" (click)="$event.stopPropagation()">
+    <div class="danfe-modal card-glass" role="dialog" aria-modal="true" aria-labelledby="danfe-dialog-heading" (click)="$event.stopPropagation()">
       <div class="danfe-header">
         <div class="danfe-title-box">
           <span class="danfe-badge-sefaz">SEFAZ - MODELO 55</span>
-          <h3>Documento Auxiliar da Nota Fiscal Eletrônica (DANFE)</h3>
+          <h3 id="danfe-dialog-heading">Documento Auxiliar da Nota Fiscal Eletrônica (DANFE)</h3>
           <p class="danfe-sub">FittShop Suplementos Nutricionais LTDA — CNPJ 48.234.901/0001-88</p>
         </div>
         <div class="danfe-header-buttons">
-          <button class="btn-print" (click)="printDanfe()" *ngIf="selectedDanfe">🖨️ Imprimir DANFE</button>
-          <button class="close-btn" (click)="closeDanfe()">✕</button>
+          <button class="btn-print" (click)="printDanfe()" *ngIf="selectedDanfe" aria-label="Imprimir documento fiscal DANFE">🖨️ Imprimir DANFE</button>
+          <button class="close-btn" (click)="closeDanfe()" aria-label="Fechar espelho de DANFE">✕</button>
         </div>
       </div>
 

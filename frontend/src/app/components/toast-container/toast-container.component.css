@@ -1,0 +1,103 @@
+.toast-wrapper {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 420px;
+  width: calc(100% - 48px);
+  pointer-events: none;
+}
+
+.toast-item {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-radius: 12px;
+  background: rgba(18, 18, 22, 0.94);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #fff;
+  animation: slideInToast 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+@keyframes slideInToast {
+  from {
+    opacity: 0;
+    transform: translateX(40px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+.toast-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.toast-icon {
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.toast-msg {
+  font-size: 0.9rem;
+  font-weight: 500;
+  line-height: 1.4;
+  color: #f0f0f5;
+}
+
+.toast-close {
+  background: transparent;
+  border: none;
+  color: #888;
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: color 0.15s ease, background 0.15s ease;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+.toast-close:hover,
+.toast-close:focus {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+  outline: none;
+}
+
+/* Modificadores de Status com Glow Neon */
+.toast-success {
+  border-left: 4px solid #ccff00;
+  box-shadow: 0 8px 24px rgba(204, 255, 0, 0.15);
+}
+
+.toast-error {
+  border-left: 4px solid #ff4d4f;
+  box-shadow: 0 8px 24px rgba(255, 77, 79, 0.15);
+}
+
+.toast-warning {
+  border-left: 4px solid #ffaa00;
+  box-shadow: 0 8px 24px rgba(255, 170, 0, 0.15);
+}
+
+.toast-info {
+  border-left: 4px solid #00f0ff;
+  box-shadow: 0 8px 24px rgba(0, 240, 255, 0.15);
+}

@@ -4,6 +4,7 @@ import { ProductService } from '../../services/product.service';
 import { CartService } from '../../services/cart.service';
 import { AuthService } from '../../services/auth.service';
 import { Product } from '../../models/product.model';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-catalog',
@@ -24,7 +25,8 @@ export class CatalogComponent {
   constructor(
     public productService: ProductService,
     private cartService: CartService,
-    private authService: AuthService
+    private authService: AuthService,
+    private toastService: ToastService
   ) {}
 
   filteredProducts(): Product[] {
@@ -56,6 +58,7 @@ export class CatalogComponent {
       return;
     }
     this.cartService.addItem(product, 1);
+    this.toastService.success(`🛒 "${product.name}" adicionado à sua sacola!`);
   }
 
   toggleNutritional(id: number): void {

@@ -1,13 +1,13 @@
 <div class="modal-overlay" (click)="closeEvent.emit()">
-  <div class="recommender-modal" (click)="$event.stopPropagation()">
+  <div class="recommender-modal" role="dialog" aria-modal="true" aria-labelledby="nutrifit-modal-heading" (click)="$event.stopPropagation()">
     <!-- Header -->
     <div class="modal-header">
       <div class="header-title-box">
         <span class="badge-lime">✨ ALGORITMO NUTRIFIT IA</span>
-        <h2>Consultor Nutricional & Stack Inteligente</h2>
+        <h2 id="nutrifit-modal-heading">Consultor Nutricional & Stack Inteligente</h2>
         <p>Informe suas métricas corporais e nosso algoritmo calculará as dosagens ideais de suplementação e treino.</p>
       </div>
-      <button class="close-btn" (click)="closeEvent.emit()" aria-label="Fechar modal">✕</button>
+      <button class="close-btn" (click)="closeEvent.emit()" aria-label="Fechar consultor NutriFit IA">✕</button>
     </div>
 
     <!-- Modal Body -->
@@ -17,10 +17,12 @@
         <!-- Goal -->
         <div class="form-group full-width">
           <label>Objetivo Principal de Treino</label>
-          <div class="goal-pills">
+          <div class="goal-pills" role="radiogroup" aria-label="Objetivo principal de treino">
             <button 
               type="button" 
               class="pill-btn" 
+              role="radio"
+              [attr.aria-checked]="goal === 'HIPERTROFIA'"
               [class.active]="goal === 'HIPERTROFIA'"
               (click)="goal = 'HIPERTROFIA'">
               💪 Hipertrofia (Massa)
@@ -28,6 +30,8 @@
             <button 
               type="button" 
               class="pill-btn" 
+              role="radio"
+              [attr.aria-checked]="goal === 'DEFINICAO'"
               [class.active]="goal === 'DEFINICAO'"
               (click)="goal = 'DEFINICAO'">
               🔥 Queima & Definição
@@ -35,6 +39,8 @@
             <button 
               type="button" 
               class="pill-btn" 
+              role="radio"
+              [attr.aria-checked]="goal === 'FORCA_POWERLIFTING'"
               [class.active]="goal === 'FORCA_POWERLIFTING'"
               (click)="goal = 'FORCA_POWERLIFTING'">
               ⚡ Força & Carga
@@ -42,6 +48,8 @@
             <button 
               type="button" 
               class="pill-btn" 
+              role="radio"
+              [attr.aria-checked]="goal === 'RESISTENCIA_CARDIO'"
               [class.active]="goal === 'RESISTENCIA_CARDIO'"
               (click)="goal = 'RESISTENCIA_CARDIO'">
               🏃 Resistência & Cardio
@@ -51,26 +59,47 @@
 
         <!-- Weight -->
         <div class="form-group">
-          <label>Peso Corporal: <strong>{{ weightKg }} kg</strong></label>
-          <input type="range" min="45" max="140" step="1" [(ngModel)]="weightKg">
+          <label for="rec-weight">Peso Corporal: <strong>{{ weightKg }} kg</strong></label>
+          <input 
+            type="range" 
+            id="rec-weight"
+            aria-label="Peso corporal em quilogramas"
+            min="45" 
+            max="140" 
+            step="1" 
+            [(ngModel)]="weightKg">
         </div>
 
         <!-- Height -->
         <div class="form-group">
-          <label>Altura: <strong>{{ heightMeters.toFixed(2) }} m</strong></label>
-          <input type="range" min="1.40" max="2.15" step="0.01" [(ngModel)]="heightMeters">
+          <label for="rec-height">Altura: <strong>{{ heightMeters.toFixed(2) }} m</strong></label>
+          <input 
+            type="range" 
+            id="rec-height"
+            aria-label="Altura corporal em metros"
+            min="1.40" 
+            max="2.15" 
+            step="0.01" 
+            [(ngModel)]="heightMeters">
         </div>
 
         <!-- Weekly Workouts -->
         <div class="form-group">
-          <label>Treinos por Semana: <strong>{{ weeklyWorkouts }}x</strong></label>
-          <input type="range" min="1" max="7" step="1" [(ngModel)]="weeklyWorkouts">
+          <label for="rec-workouts">Treinos por Semana: <strong>{{ weeklyWorkouts }}x</strong></label>
+          <input 
+            type="range" 
+            id="rec-workouts"
+            aria-label="Frequência semanal de treinos"
+            min="1" 
+            max="7" 
+            step="1" 
+            [(ngModel)]="weeklyWorkouts">
         </div>
 
         <!-- Experience Level -->
         <div class="form-group">
-          <label>Experiência de Treino</label>
-          <select [(ngModel)]="experienceLevel">
+          <label for="rec-experience">Experiência de Treino</label>
+          <select id="rec-experience" aria-label="Nível de experiência no treinamento" [(ngModel)]="experienceLevel">
             <option value="INICIANTE">Iniciante (menos de 6 meses)</option>
             <option value="INTERMEDIARIO">Intermediário (6 meses a 2 anos)</option>
             <option value="AVANCADO">Avançado (mais de 2 anos)</option>
@@ -113,7 +142,7 @@
           <h4>Produtos Sinérgicos para seu Combo (15% OFF Aplicado):</h4>
           <div class="rec-products-grid">
             <div *ngFor="let prod of result.recommendedProducts" class="rec-prod-card">
-              <img [src]="prod.imageUrl" [alt]="prod.name" class="rec-prod-img">
+              <img [src]="prod.imageUrl" [alt]="prod.name" alt="{{ prod.name }}" class="rec-prod-img">
               <div class="rec-prod-info">
                 <span class="rec-prod-name">{{ prod.name }}</span>
                 <span class="rec-prod-price">R$ {{ prod.price.toFixed(2) }}</span>

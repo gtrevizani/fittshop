@@ -1,8 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CartService } from '../../services/cart.service';
 import { AuthService } from '../../services/auth.service';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-cart-drawer',
@@ -26,8 +27,16 @@ export class CartDrawerComponent {
 
   constructor(
     public cartService: CartService,
-    public authService: AuthService
+    public authService: AuthService,
+    private toastService: ToastService
   ) {}
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (this.cartService.isCartOpen()) {
+      this.cartService.isCartOpen.set(false);
+    }
+  }
 
   applyCoupon(): void {
     if (!this.couponInput.trim()) return;
@@ -43,14 +52,17 @@ export class CartDrawerComponent {
         if (res && res.valid) {
           if (res.discountAmount !== undefined) {
             this.couponMessage = `✅ Cupom ${res.code} aplicado: R$ ${res.discountAmount.toFixed(2)} OFF (${res.description})`;
+            this.toastService.success(`🎟️ Cupom ${res.code} aplicado! R$ ${res.discountAmount.toFixed(2)} de desconto.`);
           } else {
             const discountDesc = (res.discountPercentage * 100).toFixed(0);
             this.couponMessage = `✅ Consultor ${res.affiliateCode} aplicado (${discountDesc}% OFF - ${res.affiliateName})`;
+            this.toastService.success(`🎟️ Consultor ${res.affiliateCode} ativado (${discountDesc}% OFF)!`);
           }
           this.couponSuccess = true;
         } else {
           this.couponMessage = res?.message || 'Código de consultor ou cupom não encontrado.';
           this.couponSuccess = false;
+          this.toastService.warning('Código de cupom ou consultor não localizado.');
         }
       },
       error: (err) => {

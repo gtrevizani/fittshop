@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HeaderComponent } from './components/header/header.component';
 import { HeroComponent } from './components/hero/hero.component';
@@ -9,6 +9,7 @@ import { CheckoutModalComponent } from './components/checkout-modal/checkout-mod
 import { BackofficeComponent } from './components/backoffice/backoffice.component';
 import { AuthModalComponent } from './components/auth-modal/auth-modal.component';
 import { OrdersModalComponent } from './components/orders-modal/orders-modal.component';
+import { ToastContainerComponent } from './components/toast-container/toast-container.component';
 import { CartService } from './services/cart.service';
 import { AuthService } from './services/auth.service';
 
@@ -25,7 +26,8 @@ import { AuthService } from './services/auth.service';
     CheckoutModalComponent,
     BackofficeComponent,
     AuthModalComponent,
-    OrdersModalComponent
+    OrdersModalComponent,
+    ToastContainerComponent
   ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
@@ -39,6 +41,31 @@ export class AppComponent {
   showOrdersModal = false;
 
   constructor(public cartService: CartService, public authService: AuthService) {}
+
+  @HostListener('document:keydown.escape')
+  onEscapePressed(): void {
+    if (this.showRecommenderModal) {
+      this.showRecommenderModal = false;
+      return;
+    }
+    if (this.showOrdersModal) {
+      this.showOrdersModal = false;
+      return;
+    }
+    if (this.showAuthModal || this.authService.isAuthModalOpen()) {
+      this.showAuthModal = false;
+      this.authService.closeLoginModal();
+      return;
+    }
+    if (this.cartService.isCheckoutModalOpen()) {
+      this.cartService.isCheckoutModalOpen.set(false);
+      return;
+    }
+    if (this.cartService.isCartOpen()) {
+      this.cartService.isCartOpen.set(false);
+      return;
+    }
+  }
 
   onGoalSelected(goal: string): void {
     this.selectedGoal = goal;

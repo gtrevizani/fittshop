@@ -1,0 +1,20 @@
+<div class="toast-wrapper" aria-live="polite" aria-atomic="true">
+  <div 
+    *ngFor="let toast of toastService.toasts()" 
+    class="toast-item card-glass" 
+    [ngClass]="'toast-' + toast.type"
+    role="status">
+    <div class="toast-content">
+      <span class="toast-icon">
+        <ng-container [ngSwitch]="toast.type">
+          <span *ngSwitchCase="'success'">✅</span>
+          <span *ngSwitchCase="'error'">❌</span>
+          <span *ngSwitchCase="'warning'">⚠️</span>
+          <span *ngSwitchDefault>ℹ️</span>
+        </ng-container>
+      </span>
+      <span class="toast-msg">{{ toast.message }}</span>
+    </div>
+    <button class="toast-close" (click)="toastService.remove(toast.id)" aria-label="Fechar notificação">✕</button>
+  </div>
+</div>

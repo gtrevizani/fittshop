@@ -1,8 +1,9 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CartService } from '../../services/cart.service';
 import { AuthService } from '../../services/auth.service';
+import { ToastService } from '../../services/toast.service';
 import { CheckoutRequestPayload, CheckoutResult } from '../../models/cart.model';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
@@ -44,8 +45,14 @@ export class CheckoutModalComponent implements OnInit, OnDestroy {
   constructor(
     public cartService: CartService,
     public authService: AuthService,
+    private toastService: ToastService,
     private http: HttpClient
   ) {}
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.close();
+  }
 
   ngOnInit(): void {
     if (!this.authService.isAuthenticated()) {
@@ -200,6 +207,7 @@ export class CheckoutModalComponent implements OnInit, OnDestroy {
         if (order && (order.status === 'PAGO' || order.status === 'EM_SEPARACAO' || order.status === 'EXPEDIDO' || order.status === 'ENTREGUE')) {
           this.orderResult!.status = 'PAGO';
           this.orderResult!.message = '🎉 Pagamento aprovado via PIX / Banco Central! Seu pedido já está sendo preparado pela equipe do galpão FittShop.';
+          this.toastService.success('🎉 Pagamento PIX identificado! Seu pedido está em separação.');
           if (this.pollingInterval) clearInterval(this.pollingInterval);
         }
       },
@@ -213,6 +221,7 @@ export class CheckoutModalComponent implements OnInit, OnDestroy {
     if (this.orderResult?.pixCopiaECola) {
       navigator.clipboard.writeText(this.orderResult.pixCopiaECola);
       this.copiedPix = true;
+      this.toastService.success('📋 Chave PIX copiada para a área de transferência!');
       setTimeout(() => (this.copiedPix = false), 2500);
     }
   }

@@ -1,7 +1,8 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, HostListener, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
+import { ToastService } from '../../services/toast.service';
 import { OrderData } from '../../models/cart.model';
 import { environment } from '../../../environments/environment';
 
@@ -25,8 +26,18 @@ export class OrdersModalComponent implements OnInit {
 
   constructor(
     public authService: AuthService,
+    private toastService: ToastService,
     private http: HttpClient
   ) {}
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (this.selectedDanfe) {
+      this.closeDanfe();
+    } else {
+      this.closeEvent.emit();
+    }
+  }
 
   openDanfe(orderNumber: string): void {
     this.isLoadingDanfe = true;
@@ -55,6 +66,7 @@ export class OrdersModalComponent implements OnInit {
     if (!key) return;
     navigator.clipboard.writeText(key.replace(/\s+/g, ''));
     this.copiedKey = true;
+    this.toastService.success('📋 Chave de Acesso SEFAZ copiada!');
     setTimeout(() => this.copiedKey = false, 2500);
   }
 

@@ -1,8 +1,9 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, HostListener, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { CartService } from '../../services/cart.service';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-auth-modal',
@@ -33,8 +34,14 @@ export class AuthModalComponent {
 
   constructor(
     public authService: AuthService,
-    private cartService: CartService
+    private cartService: CartService,
+    private toastService: ToastService
   ) {}
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.closeEvent.emit();
+  }
 
   submitLogin(): void {
     this.isLoading = true;
@@ -45,7 +52,8 @@ export class AuthModalComponent {
       next: (res) => {
         this.isLoading = false;
         this.successMessage = `Bem-vindo de volta, ${res.name}!`;
-        setTimeout(() => this.closeEvent.emit(), 1000);
+        this.toastService.success(`🏋️ Bem-vindo ao FittShop, ${res.name}!`);
+        setTimeout(() => this.closeEvent.emit(), 600);
       },
       error: (err) => {
         this.isLoading = false;
@@ -80,7 +88,8 @@ export class AuthModalComponent {
         this.isLoading = false;
         this.cartService.userFittCoinsBalance.set(50);
         this.successMessage = `🎉 Conta criada com sucesso! Você ganhou 50 FittCoins de bônus!`;
-        setTimeout(() => this.closeEvent.emit(), 1200);
+        this.toastService.success(`🎉 Atleta ${res.name} cadastrado com sucesso! +50 FittCoins creditados.`);
+        setTimeout(() => this.closeEvent.emit(), 800);
       },
       error: (err) => {
         this.isLoading = false;

@@ -1,12 +1,12 @@
 <div class="modal-overlay" (click)="closeEvent.emit()">
-  <div class="auth-modal card-glass" (click)="$event.stopPropagation()">
+  <div class="auth-modal card-glass" role="dialog" aria-modal="true" aria-labelledby="auth-modal-dialog-title" (click)="$event.stopPropagation()">
     <!-- Header -->
     <div class="auth-header">
       <div class="brand-head">
         <span class="auth-icon">🏋️</span>
-        <h2>{{ mode === 'LOGIN' ? 'Entrar no Clube FittShop' : 'Cadastro de Novo Atleta' }}</h2>
+        <h2 id="auth-modal-dialog-title">{{ mode === 'LOGIN' ? 'Entrar no Clube FittShop' : 'Cadastro de Novo Atleta' }}</h2>
       </div>
-      <button class="close-btn" (click)="closeEvent.emit()">✕</button>
+      <button class="close-btn" (click)="closeEvent.emit()" aria-label="Fechar janela de autenticação">✕</button>
     </div>
 
     <!-- Security & Purpose Notice Banner -->
@@ -16,15 +16,19 @@
     </div>
 
     <!-- Mode Selector Tabs -->
-    <div class="auth-tabs">
+    <div class="auth-tabs" role="tablist">
       <button 
         class="auth-tab" 
+        role="tab"
+        [attr.aria-selected]="mode === 'LOGIN'"
         [class.active]="mode === 'LOGIN'"
         (click)="mode = 'LOGIN'; errorMessage = ''; successMessage = ''">
         Já tenho Conta (Login)
       </button>
       <button 
         class="auth-tab" 
+        role="tab"
+        [attr.aria-selected]="mode === 'REGISTER'"
         [class.active]="mode === 'REGISTER'"
         (click)="mode = 'REGISTER'; errorMessage = ''; successMessage = ''">
         Criar Conta (+50 FittCoins)
@@ -33,23 +37,23 @@
 
     <!-- Body -->
     <div class="auth-body">
-      <div *ngIf="errorMessage" class="auth-alert error">
+      <div *ngIf="errorMessage" class="auth-alert error" role="alert">
         {{ errorMessage }}
       </div>
-      <div *ngIf="successMessage" class="auth-alert success">
+      <div *ngIf="successMessage" class="auth-alert success" role="status">
         {{ successMessage }}
       </div>
 
       <!-- LOGIN FORM -->
       <form *ngIf="mode === 'LOGIN'" (ngSubmit)="submitLogin()" class="auth-form">
         <div class="form-field">
-          <label>E-mail do Atleta</label>
-          <input type="email" placeholder="seu-email@dominio.com" [(ngModel)]="loginEmail" name="email" required>
+          <label for="auth-login-email">E-mail do Atleta</label>
+          <input type="email" id="auth-login-email" placeholder="seu-email@dominio.com" [(ngModel)]="loginEmail" name="email" required>
         </div>
 
         <div class="form-field">
-          <label>Senha de Acesso</label>
-          <input type="password" placeholder="••••••••" [(ngModel)]="loginPassword" name="password" required>
+          <label for="auth-login-password">Senha de Acesso</label>
+          <input type="password" id="auth-login-password" placeholder="••••••••" [(ngModel)]="loginPassword" name="password" required>
         </div>
 
         <button type="submit" class="btn-primary auth-btn" [disabled]="isLoading">
@@ -66,29 +70,29 @@
       <!-- REGISTER FORM -->
       <form *ngIf="mode === 'REGISTER'" (ngSubmit)="submitRegister()" class="auth-form">
         <div class="form-field">
-          <label>Nome Completo</label>
-          <input type="text" placeholder="Ex: Lucas Silva" [(ngModel)]="registerName" name="name" required>
+          <label for="auth-reg-name">Nome Completo</label>
+          <input type="text" id="auth-reg-name" placeholder="Ex: Lucas Silva" [(ngModel)]="registerName" name="name" required>
         </div>
 
         <div class="form-field">
-          <label>E-mail</label>
-          <input type="email" placeholder="lucas@exemplo.com" [(ngModel)]="registerEmail" name="email" required>
+          <label for="auth-reg-email">E-mail</label>
+          <input type="email" id="auth-reg-email" placeholder="lucas@exemplo.com" [(ngModel)]="registerEmail" name="email" required>
         </div>
 
         <div class="row-2">
           <div class="form-field">
-            <label>Senha</label>
-            <input type="password" placeholder="Mínimo 6 caracteres" [(ngModel)]="registerPassword" name="password" required>
+            <label for="auth-reg-password">Senha</label>
+            <input type="password" id="auth-reg-password" placeholder="Mínimo 6 caracteres" [(ngModel)]="registerPassword" name="password" required>
           </div>
           <div class="form-field">
-            <label>Telefone / WhatsApp</label>
-            <input type="text" placeholder="(11) 98888-7777" [(ngModel)]="registerPhone" name="phone">
+            <label for="auth-reg-phone">Telefone / WhatsApp</label>
+            <input type="text" id="auth-reg-phone" placeholder="(11) 98888-7777" [(ngModel)]="registerPhone" name="phone">
           </div>
         </div>
 
         <div class="form-field">
-          <label>CPF (Para emissão de NF-e)</label>
-          <input type="text" placeholder="000.000.000-00" [(ngModel)]="registerCpf" name="cpf">
+          <label for="auth-reg-cpf">CPF (Para emissão de NF-e)</label>
+          <input type="text" id="auth-reg-cpf" placeholder="000.000.000-00" [(ngModel)]="registerCpf" name="cpf">
         </div>
 
         <button type="submit" class="btn-primary auth-btn" [disabled]="isLoading">

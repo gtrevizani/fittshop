@@ -1,12 +1,12 @@
 <div class="modal-overlay" (click)="close()">
-  <div class="checkout-modal" (click)="$event.stopPropagation()">
+  <div class="checkout-modal" role="dialog" aria-modal="true" aria-labelledby="checkout-dialog-heading" (click)="$event.stopPropagation()">
     <!-- Header -->
     <div class="modal-header">
       <div class="header-title-box">
         <span class="badge-lime">🔒 CHECKOUT SEGURO FITTSHOP</span>
-        <h2>{{ step === 'FORM' ? 'Finalização do Pedido & Reserva' : 'Pedido Confirmado — Aguardando Pagamento' }}</h2>
+        <h2 id="checkout-dialog-heading">{{ step === 'FORM' ? 'Finalização do Pedido & Reserva' : 'Pedido Confirmado — Aguardando Pagamento' }}</h2>
       </div>
-      <button class="close-btn" (click)="close()" aria-label="Fechar checkout">✕</button>
+      <button class="close-btn" (click)="close()" aria-label="Fechar janela de checkout">✕</button>
     </div>
 
     <!-- Step 1: Form -->
@@ -29,23 +29,23 @@
           <h3>1. Dados do Atleta</h3>
           <div class="input-row">
             <div class="form-field">
-              <label>Nome Completo</label>
-              <input type="text" [(ngModel)]="customerName">
+              <label for="chk-customer-name">Nome Completo</label>
+              <input type="text" id="chk-customer-name" [(ngModel)]="customerName">
             </div>
             <div class="form-field">
-              <label>E-mail</label>
-              <input type="email" [(ngModel)]="customerEmail">
+              <label for="chk-customer-email">E-mail</label>
+              <input type="email" id="chk-customer-email" [(ngModel)]="customerEmail">
             </div>
           </div>
           <div class="input-row">
             <div class="form-field">
-              <label>CPF</label>
-              <input type="text" [(ngModel)]="customerCpf">
+              <label for="chk-customer-cpf">CPF</label>
+              <input type="text" id="chk-customer-cpf" [(ngModel)]="customerCpf">
               <small *ngIf="cpfErrorMessage" style="color: #ff4d4f; font-size: 0.75rem; margin-top: 4px;">{{ cpfErrorMessage }}</small>
             </div>
             <div class="form-field">
-              <label>Telefone / WhatsApp</label>
-              <input type="text" [(ngModel)]="customerPhone">
+              <label for="chk-customer-phone">Telefone / WhatsApp</label>
+              <input type="text" id="chk-customer-phone" [(ngModel)]="customerPhone">
             </div>
           </div>
         </div>
@@ -55,19 +55,19 @@
           <h3>2. Entrega dos Suplementos</h3>
           <div class="input-row">
             <div class="form-field">
-              <label>CEP de Destino</label>
-              <input type="text" [(ngModel)]="deliveryZipCode" (input)="onCepChange()" placeholder="Ex: 01310-100">
+              <label for="chk-zip-code">CEP de Destino</label>
+              <input type="text" id="chk-zip-code" [(ngModel)]="deliveryZipCode" (input)="onCepChange()" placeholder="Ex: 01310-100">
               <small *ngIf="isSearchingCep" style="color: #ccff00; font-size: 0.75rem; margin-top: 4px;">⚡ Buscando endereço via ViaCEP...</small>
               <small *ngIf="cepErrorMessage" style="color: #ff4d4f; font-size: 0.75rem; margin-top: 4px;">{{ cepErrorMessage }}</small>
             </div>
             <div class="form-field">
-              <label>Código da Vendedora (Opcional)</label>
-              <input type="text" placeholder="Ex: CAMILA04" [(ngModel)]="sellerCode">
+              <label for="chk-seller-code">Código da Vendedora (Opcional)</label>
+              <input type="text" id="chk-seller-code" placeholder="Ex: CAMILA04" [(ngModel)]="sellerCode">
             </div>
           </div>
           <div class="form-field">
-            <label>Endereço Completo</label>
-            <input type="text" [(ngModel)]="deliveryAddress">
+            <label for="chk-delivery-address">Endereço Completo</label>
+            <input type="text" id="chk-delivery-address" [(ngModel)]="deliveryAddress">
           </div>
         </div>
 
@@ -75,8 +75,8 @@
         <div class="form-section">
           <h3>3. Forma de Pagamento</h3>
           <div class="payment-options-grid">
-            <label class="pay-option" [class.selected]="paymentMethod === 'PIX'">
-              <input type="radio" name="pay" value="PIX" [(ngModel)]="paymentMethod">
+            <label for="pay-pix" class="pay-option" [class.selected]="paymentMethod === 'PIX'">
+              <input type="radio" id="pay-pix" name="pay" value="PIX" [(ngModel)]="paymentMethod" aria-label="Pagamento via Pix Instantâneo">
               <div class="pay-content">
                 <span class="pay-icon">⚡</span>
                 <span class="pay-title">PIX Instantâneo</span>
@@ -84,8 +84,8 @@
               </div>
             </label>
 
-            <label class="pay-option" [class.selected]="paymentMethod === 'CREDIT_CARD'">
-              <input type="radio" name="pay" value="CREDIT_CARD" [(ngModel)]="paymentMethod">
+            <label for="pay-card" class="pay-option" [class.selected]="paymentMethod === 'CREDIT_CARD'">
+              <input type="radio" id="pay-card" name="pay" value="CREDIT_CARD" [(ngModel)]="paymentMethod" aria-label="Pagamento via Cartão de Crédito">
               <div class="pay-content">
                 <span class="pay-icon">💳</span>
                 <span class="pay-title">Cartão de Crédito</span>
@@ -93,8 +93,8 @@
               </div>
             </label>
 
-            <label class="pay-option" [class.selected]="paymentMethod === 'BOLETO'">
-              <input type="radio" name="pay" value="BOLETO" [(ngModel)]="paymentMethod">
+            <label for="pay-boleto" class="pay-option" [class.selected]="paymentMethod === 'BOLETO'">
+              <input type="radio" id="pay-boleto" name="pay" value="BOLETO" [(ngModel)]="paymentMethod" aria-label="Pagamento via Boleto Bancário">
               <div class="pay-content">
                 <span class="pay-icon">📄</span>
                 <span class="pay-title">Boleto Bancário</span>
@@ -183,10 +183,10 @@
         </div>
 
         <div class="pix-copy-paste-group">
-          <label>Chave Copia e Cola:</label>
+          <label for="pix-copia-cola-input">Chave Copia e Cola:</label>
           <div class="input-with-button">
-            <input type="text" [value]="orderResult.pixCopiaECola" readonly>
-            <button class="btn-secondary copy-btn" (click)="copyPixPayload()">
+            <input type="text" id="pix-copia-cola-input" aria-label="Código Pix Copia e Cola" [value]="orderResult.pixCopiaECola" readonly>
+            <button class="btn-secondary copy-btn" (click)="copyPixPayload()" aria-label="Copiar código Pix">
               {{ copiedPix ? 'Copiado! ✓' : 'Copiar' }}
             </button>
           </div>

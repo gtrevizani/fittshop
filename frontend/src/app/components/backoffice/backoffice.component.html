@@ -62,8 +62,8 @@
 
           <div class="form-fields">
             <div class="bo-field">
-              <label>Selecione o Produto para Reposição</label>
-              <select [(ngModel)]="selectedProductId">
+              <label for="bo-product-select">Selecione o Produto para Reposição</label>
+              <select id="bo-product-select" aria-label="Produto para reposição de lote" [(ngModel)]="selectedProductId">
                 <option *ngFor="let p of productService.getProducts()" [value]="p.id">
                   {{ p.name }} (Estoque atual: {{ p.stockQuantity }})
                 </option>
@@ -72,21 +72,21 @@
 
             <div class="row-2">
               <div class="bo-field">
-                <label>Quantidade do Fardo (unid.)</label>
-                <input type="number" min="1" [(ngModel)]="replenishQuantity">
+                <label for="bo-replenish-qty">Quantidade do Fardo (unid.)</label>
+                <input type="number" id="bo-replenish-qty" min="1" [(ngModel)]="replenishQuantity" aria-label="Quantidade de fardos para entrada">
               </div>
               <div class="bo-field">
-                <label>Número do Lote</label>
-                <input type="text" [(ngModel)]="newBatchCode">
+                <label for="bo-batch-code">Número do Lote</label>
+                <input type="text" id="bo-batch-code" [(ngModel)]="newBatchCode" aria-label="Código do lote sanitário">
               </div>
             </div>
 
             <div class="bo-field">
-              <label>Data de Validade (ANVISA min 45 dias)</label>
-              <input type="date" [(ngModel)]="newExpirationDate">
+              <label for="bo-expiration-date">Data de Validade (ANVISA min 45 dias)</label>
+              <input type="date" id="bo-expiration-date" [(ngModel)]="newExpirationDate" aria-label="Data de validade do produto">
             </div>
 
-            <button class="btn-primary" (click)="processReplenishment()">
+            <button class="btn-primary" (click)="processReplenishment()" aria-label="Confirmar entrada de fardo no estoque">
               <span>Confirmar Entrada de Fardo no Estoque</span>
             </button>
           </div>
@@ -264,10 +264,10 @@
 
         <!-- Consulta Individual de Consultor -->
         <div class="tool-box" style="margin-bottom: 24px; padding: 16px; background: rgba(255, 255, 255, 0.02); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.05);">
-          <label style="display: block; font-size: 0.85rem; color: #888; margin-bottom: 8px;">Consultar Extrato por Código de Afiliado ou Cupom:</label>
+          <label for="bo-affiliate-search" style="display: block; font-size: 0.85rem; color: #888; margin-bottom: 8px;">Consultar Extrato por Código de Afiliado ou Cupom:</label>
           <div style="display: flex; gap: 12px; max-width: 450px;">
-            <input type="text" placeholder="Ex: SARAH10, PERSONAL10..." [(ngModel)]="searchAffiliateCode" (keyup.enter)="searchAffiliate()" style="flex: 1; padding: 8px 12px; background: rgba(0,0,0,0.4); border: 1px solid #333; color: #fff; border-radius: 6px;">
-            <button class="btn-table-action" (click)="searchAffiliate()">Consultar</button>
+            <input type="text" id="bo-affiliate-search" aria-label="Código de afiliado ou consultor para consulta" placeholder="Ex: SARAH10, PERSONAL10..." [(ngModel)]="searchAffiliateCode" (keyup.enter)="searchAffiliate()" style="flex: 1; padding: 8px 12px; background: rgba(0,0,0,0.4); border: 1px solid #333; color: #fff; border-radius: 6px;">
+            <button class="btn-table-action" (click)="searchAffiliate()" aria-label="Consultar extrato de afiliado">Consultar</button>
           </div>
           <small *ngIf="affiliateSearchError" style="color: #ff4d4f; font-size: 0.8rem; margin-top: 6px; display: block;">{{ affiliateSearchError }}</small>
         </div>
@@ -446,12 +446,12 @@
 
   <!-- MODAL ETIQUETA DE ENVIO (CORREIOS / MELHOR ENVIO) -->
   <div class="label-modal-overlay" *ngIf="selectedShippingLabel" (click)="closeShippingLabel()">
-    <div class="label-modal card-glass" (click)="$event.stopPropagation()">
+    <div class="label-modal card-glass" role="dialog" aria-modal="true" aria-labelledby="shipping-label-heading" (click)="$event.stopPropagation()">
       <div class="label-modal-header">
-        <h3>Etiqueta Oficial de Despacho Logístico</h3>
+        <h3 id="shipping-label-heading">Etiqueta Oficial de Despacho Logístico</h3>
         <div class="label-actions">
-          <button class="btn-print" (click)="printShippingLabel()">🖨️ Imprimir Etiqueta</button>
-          <button class="close-btn" (click)="closeShippingLabel()">✕</button>
+          <button class="btn-print" (click)="printShippingLabel()" aria-label="Imprimir etiqueta de postagem">🖨️ Imprimir Etiqueta</button>
+          <button class="close-btn" (click)="closeShippingLabel()" aria-label="Fechar janela de etiqueta">✕</button>
         </div>
       </div>
 

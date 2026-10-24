@@ -27,11 +27,13 @@
       <div class="header-search">
         <input 
           type="text" 
+          id="header-search-input"
+          aria-label="Buscar produtos, suplementos e vestuário esportivo"
           placeholder="Buscar whey, creatina, cinturão, combos..." 
           [(ngModel)]="searchTerm" 
           (keyup.enter)="onSearch()"
           (input)="onSearch()">
-        <button class="search-btn" (click)="onSearch()" aria-label="Buscar produto">
+        <button class="search-btn" (click)="onSearch()" aria-label="Executar busca de produtos">
           <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
           </svg>
@@ -41,19 +43,19 @@
       <!-- Action Nav Items -->
       <div class="header-actions">
         <!-- NutriFit IA CTA -->
-        <button class="nutrifit-btn" (click)="openRecommenderEvent.emit()">
+        <button class="nutrifit-btn" (click)="openRecommenderEvent.emit()" aria-label="Abrir consultor de suplementação NutriFit IA">
           <span class="sparkle">✨</span>
           <span>Consultor <strong>NutriFit IA</strong></span>
         </button>
 
         <!-- Backoffice Toggle Button (only if authenticated staff) -->
-        <button *ngIf="authService.isStaff()" class="backoffice-btn" (click)="toggleBackofficeEvent.emit()">
+        <button *ngIf="authService.isStaff()" class="backoffice-btn" (click)="toggleBackofficeEvent.emit()" aria-label="Painel de gestão administrativa e estoque">
           <span>⚙️</span>
           <span>Gestão</span>
         </button>
 
         <!-- FittCoins Balance Pill (Exclusively for Authenticated Athletes) -->
-        <div *ngIf="authService.isAuthenticated()" class="fittcoins-pill" title="Seu saldo de cashback FittCoins">
+        <div *ngIf="authService.isAuthenticated()" class="fittcoins-pill" title="Seu saldo de cashback FittCoins" aria-label="Saldo de cashback em FittCoins">
           <span class="coin-icon">🟡</span>
           <div class="coin-info">
             <span class="coin-qty">{{ cartService.userFittCoinsBalance() }} FittCoins</span>
@@ -62,23 +64,23 @@
         </div>
 
         <!-- Unauthenticated Public Visitor CTA -->
-        <button *ngIf="!authService.isAuthenticated()" class="auth-cta-btn" (click)="openAuthEvent.emit()" title="Entrar ou Criar Conta de Atleta">
+        <button *ngIf="!authService.isAuthenticated()" class="auth-cta-btn" (click)="openAuthEvent.emit()" title="Entrar ou Criar Conta de Atleta" aria-label="Entrar ou criar conta de atleta">
           <span class="auth-icon">⚡</span>
           <span>Entrar / Cadastrar</span>
         </button>
 
         <!-- Authenticated Athlete Nav Bar (Profile, Orders, Logout) -->
         <div *ngIf="authService.isAuthenticated()" class="auth-user-dropdown-container">
-          <button class="user-profile-btn" (click)="openOrdersEvent.emit()" title="Visualizar Meus Pedidos">
+          <button class="user-profile-btn" (click)="openOrdersEvent.emit()" title="Visualizar Meus Pedidos" [attr.aria-label]="'Perfil e histórico de compras do atleta ' + authService.currentUserName()">
             <span>👤</span>
             <span class="user-name-text">{{ authService.currentUserName() }}</span>
             <span class="verified-badge" title="Atleta Oficial">✓</span>
           </button>
-          <button class="orders-nav-btn" (click)="openOrdersEvent.emit()" title="Rastrear Pedidos em Tempo Real">
+          <button class="orders-nav-btn" (click)="openOrdersEvent.emit()" title="Rastrear Pedidos em Tempo Real" aria-label="Rastrear pedidos do atleta">
             <span>📦</span>
             <span class="nav-label">Pedidos</span>
           </button>
-          <button class="logout-btn" (click)="onLogout()" title="Sair da Conta">
+          <button class="logout-btn" (click)="onLogout()" title="Sair da Conta" aria-label="Encerrar sessão de atleta">
             <span>🚪</span>
           </button>
         </div>

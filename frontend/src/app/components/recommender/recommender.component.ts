@@ -1,9 +1,10 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, HostListener, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RecommendationService } from '../../services/recommendation.service';
 import { CartService } from '../../services/cart.service';
 import { AuthService } from '../../services/auth.service';
+import { ToastService } from '../../services/toast.service';
 import { AthleteProfilePayload, RecommendationResult } from '../../models/recommendation.model';
 import { Product } from '../../models/product.model';
 
@@ -29,8 +30,14 @@ export class RecommenderComponent {
   constructor(
     private recommendationService: RecommendationService,
     private cartService: CartService,
-    public authService: AuthService
+    public authService: AuthService,
+    private toastService: ToastService
   ) {}
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.closeEvent.emit();
+  }
 
   calculate(): void {
     this.isCalculating = true;
@@ -46,9 +53,11 @@ export class RecommenderComponent {
       next: (res) => {
         this.result = res;
         this.isCalculating = false;
+        this.toastService.success('✨ Plano NutriFit IA calculado com base no seu biotipo!');
       },
       error: () => {
         this.isCalculating = false;
+        this.toastService.error('Erro ao calcular plano nutricional.');
       }
     });
   }
@@ -61,6 +70,7 @@ export class RecommenderComponent {
     }
     if (this.result && this.result.recommendedProducts) {
       this.cartService.addCombo(this.result.recommendedProducts);
+      this.toastService.success('🔥 Stack NutriFit IA adicionado à sua sacola!');
       this.closeEvent.emit();
     }
   }

@@ -24,11 +24,11 @@
       <span>Filtrando por:</span>
       <span *ngIf="selectedGoal !== 'TODOS'" class="filter-chip">
         Objetivo: {{ selectedGoal }}
-        <button (click)="selectedGoal = 'TODOS'">✕</button>
+        <button (click)="selectedGoal = 'TODOS'" aria-label="Remover filtro de objetivo">✕</button>
       </span>
       <span *ngIf="searchQuery" class="filter-chip">
         Busca: "{{ searchQuery }}"
-        <button (click)="searchQuery = ''">✕</button>
+        <button (click)="searchQuery = ''" aria-label="Remover filtro de pesquisa">✕</button>
       </span>
     </div>
 
@@ -45,7 +45,7 @@
 
         <!-- Product Image -->
         <div class="img-wrapper">
-          <img [src]="prod.imageUrl" [alt]="prod.name" class="product-img" loading="lazy">
+          <img [src]="prod.imageUrl" [alt]="prod.name" alt="{{ prod.name }}" class="product-img" loading="lazy">
         </div>
 
         <!-- Product Details -->
@@ -141,7 +141,7 @@
               <span class="installments">até 3x de R$ {{ (prod.price / 3).toFixed(2) }} sem juros</span>
             </div>
 
-            <button class="btn-primary add-btn" (click)="addToCart(prod)">
+            <button class="btn-primary add-btn" (click)="addToCart(prod)" [attr.aria-label]="'Adicionar ' + prod.name + ' à sacola'">
               <span>Adicionar</span>
               <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
