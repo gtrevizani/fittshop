@@ -57,6 +57,12 @@ fittshop:
     combo-discount-rate: 0.15 # 15% OFF em combos
     free-shipping-threshold-sudeste: 199.00
     free-shipping-threshold-outros: 299.00
+  payment:
+    mercadopago:
+      access-token: ${MERCADOPAGO_ACCESS_TOKEN:${FITTSHOP_PAYMENT_MERCADOPAGO_ACCESS_TOKEN:}}
+      webhook-secret: ${MERCADOPAGO_WEBHOOK_SECRET:${FITTSHOP_PAYMENT_MERCADOPAGO_WEBHOOK_SECRET:}}
+    pix:
+      key: ${PIX_KEY:${FITTSHOP_PIX_KEY:fittshop@fittshop.com.br}}
 
 ---
 spring:
