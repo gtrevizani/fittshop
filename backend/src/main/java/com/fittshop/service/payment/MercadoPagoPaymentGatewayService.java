@@ -4,6 +4,12 @@ import com.fittshop.domain.dto.PaymentResult;
 import com.fittshop.domain.enums.PaymentMethod;
 import com.fittshop.domain.model.Customer;
 import com.fittshop.domain.model.Order;
+import com.mercadopago.MercadoPagoConfig;
+import com.mercadopago.client.common.IdentificationRequest;
+import com.mercadopago.client.payment.PaymentClient;
+import com.mercadopago.client.payment.PaymentCreateRequest;
+import com.mercadopago.client.payment.PaymentPayerRequest;
+import com.mercadopago.resources.payment.Payment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,26 +34,37 @@ public class MercadoPagoPaymentGatewayService implements PaymentGatewayService {
     @Value("${fittshop.payment.pix.key:fittshop@fittshop.com.br}")
     private String pixKey = "fittshop@fittshop.com.br";
 
-    private final java.net.http.HttpClient httpClient = java.net.http.HttpClient.newBuilder()
-            .connectTimeout(java.time.Duration.ofSeconds(5))
-            .build();
+    private final PaymentClient paymentClient;
+
+    public MercadoPagoPaymentGatewayService() {
+        this.paymentClient = new PaymentClient();
+    }
+
+    // Construtor para injeção de dependência / testes unitários com mock
+    public MercadoPagoPaymentGatewayService(PaymentClient paymentClient, String accessToken) {
+        this.paymentClient = paymentClient;
+        this.accessToken = accessToken;
+        if (accessToken != null && !accessToken.isBlank()) {
+            MercadoPagoConfig.setAccessToken(accessToken);
+        }
+    }
 
     @Override
     public PaymentResult processPayment(Order order, PaymentMethod method, Customer customer) {
         String txId = "MP-" + UUID.randomUUID().toString().substring(0, 18).toUpperCase();
-        log.info("Processando pagamento via Gateway Mercado Pago para pedido: {}, Método: {}, TxId: {}",
+        log.info("Processando pagamento via SDK Oficial Mercado Pago para pedido: {}, Método: {}, TxId: {}",
                 order.getOrderNumber(), method, txId);
 
         if (method == PaymentMethod.PIX) {
-            // Se possuir chave de acesso configurada em produção, chama a API oficial do Mercado Pago
+            // Se possuir access-token configurado em ambiente real, processa via SDK Oficial Mercado Pago
             if (accessToken != null && !accessToken.isBlank()) {
-                PaymentResult remoteResult = callMercadoPagoPixApi(order, customer);
+                PaymentResult remoteResult = callOfficialMercadoPagoSdkPix(order, customer);
                 if (remoteResult != null) {
                     return remoteResult;
                 }
             }
 
-            // Fallback Resiliente / Modo Determinístico padrão EMVCo do Banco Central
+            // Fallback Resiliente / Modo Determinístico padrão EMVCo do Banco Central (quando offline ou sem credenciais ativas)
             String copiaECola = generateEmvCoPixPayload(order.getOrderNumber(), order.getTotalAmount(), pixKey);
             String qrCodeBase64 = generatePixQrCodeSvg(copiaECola, order.getOrderNumber());
             return new PaymentResult(
@@ -76,80 +93,63 @@ public class MercadoPagoPaymentGatewayService implements PaymentGatewayService {
         }
     }
 
-    private PaymentResult callMercadoPagoPixApi(Order order, Customer customer) {
+    /**
+     * Utiliza o SDK Oficial do Mercado Pago (com.mercadopago.client.payment.PaymentClient)
+     * para criar pagamento PIX dinâmico e extrair os dados oficiais do QR Code.
+     */
+    private PaymentResult callOfficialMercadoPagoSdkPix(Order order, Customer customer) {
         try {
+            MercadoPagoConfig.setAccessToken(accessToken);
+
             String payerEmail = customer != null && customer.getEmail() != null ? customer.getEmail() : "atleta@fittshop.com.br";
-            String payerName = customer != null && customer.getName() != null ? customer.getName() : "Atleta FittShop";
-            String payerCpf = customer != null && customer.getCpf() != null ? customer.getCpf().replaceAll("\\D", "") : "00000000000";
+            String payerFirstName = customer != null && customer.getName() != null ? customer.getName() : "Atleta FittShop";
+            String payerCpf = customer != null && customer.getCpf() != null ? customer.getCpf().replaceAll("\\D", "") : "52998224725";
 
-            String jsonPayload = String.format(java.util.Locale.US,
-                    "{"
-                    + "\"transaction_amount\": %.2f,"
-                    + "\"description\": \"Pedido FittShop %s\","
-                    + "\"payment_method_id\": \"pix\","
-                    + "\"payer\": {"
-                    + "  \"email\": \"%s\","
-                    + "  \"first_name\": \"%s\","
-                    + "  \"identification\": { \"type\": \"CPF\", \"number\": \"%s\" }"
-                    + "}"
-                    + "}",
-                    order.getTotalAmount(),
-                    order.getOrderNumber(),
-                    payerEmail,
-                    payerName,
-                    payerCpf
-            );
-
-            java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder()
-                    .uri(java.net.URI.create("https://api.mercadopago.com/v1/payments"))
-                    .header("Authorization", "Bearer " + accessToken)
-                    .header("Content-Type", "application/json")
-                    .header("X-Idempotency-Key", order.getOrderNumber())
-                    .timeout(java.time.Duration.ofSeconds(6))
-                    .POST(java.net.http.HttpRequest.BodyPublishers.ofString(jsonPayload, StandardCharsets.UTF_8))
+            PaymentPayerRequest payerRequest = PaymentPayerRequest.builder()
+                    .email(payerEmail)
+                    .firstName(payerFirstName)
+                    .identification(IdentificationRequest.builder()
+                            .type("CPF")
+                            .number(payerCpf)
+                            .build())
                     .build();
 
-            java.net.http.HttpResponse<String> response = httpClient.send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() == 200 || response.statusCode() == 201) {
-                String body = response.body();
-                log.info("Resposta com sucesso do Mercado Pago API: HTTP {}", response.statusCode());
+            PaymentCreateRequest createRequest = PaymentCreateRequest.builder()
+                    .transactionAmount(order.getTotalAmount())
+                    .description("Pedido FittShop " + order.getOrderNumber())
+                    .paymentMethodId("pix")
+                    .externalReference(order.getOrderNumber())
+                    .payer(payerRequest)
+                    .build();
 
-                // Extrai dados da resposta
-                String mpId = extractJsonString(body, "\"id\":");
-                String copiaECola = extractJsonString(body, "\"qr_code\":");
-                String qrCodeBase64 = extractJsonString(body, "\"qr_code_base64\":");
+            log.info("Invocando PaymentClient.create() via SDK Oficial do Mercado Pago...");
+            Payment payment = paymentClient.create(createRequest);
+
+            if (payment != null && payment.getId() != null) {
+                String mpId = String.valueOf(payment.getId());
+                String copiaECola = null;
+                String qrCodeBase64 = null;
+
+                if (payment.getPointOfInteraction() != null && payment.getPointOfInteraction().getTransactionData() != null) {
+                    copiaECola = payment.getPointOfInteraction().getTransactionData().getQrCode();
+                    qrCodeBase64 = payment.getPointOfInteraction().getTransactionData().getQrCodeBase64();
+                }
 
                 if (copiaECola != null && !copiaECola.isBlank()) {
                     String formattedQrCode = qrCodeBase64 != null ? "data:image/png;base64," + qrCodeBase64 : generatePixQrCodeSvg(copiaECola, order.getOrderNumber());
                     return new PaymentResult(
                             "MP-" + mpId,
-                            "PENDING",
+                            payment.getStatus() != null ? payment.getStatus().toUpperCase() : "PENDING",
                             copiaECola,
                             formattedQrCode,
-                            "QR Code PIX gerado diretamente via API Oficial do Mercado Pago."
+                            "QR Code PIX gerado com sucesso via SDK Oficial do Mercado Pago (ID: " + mpId + ")."
                     );
                 }
-            } else {
-                log.warn("Mercado Pago API retornou status HTTP {}: {}", response.statusCode(), response.body());
             }
         } catch (Exception e) {
-            log.warn("Falha ao se conectar com Mercado Pago API (usando motor padrão EMVCo): {}", e.getMessage());
+            log.warn("Falha na chamada do SDK Oficial Mercado Pago (acionando fallback resiliente EMVCo): {}", e.getMessage());
         }
         return null;
-    }
-
-    private String extractJsonString(String json, String key) {
-        int idx = json.indexOf(key);
-        if (idx == -1) return null;
-        int start = idx + key.length();
-        while (start < json.length() && (json.charAt(start) == ' ' || json.charAt(start) == '\"' || json.charAt(start) == ':')) {
-            start++;
-        }
-        int end = start;
-        while (end < json.length() && json.charAt(end) != '\"' && json.charAt(end) != ',' && json.charAt(end) != '}') {
-            end++;
-        }
-        return json.substring(start, end).trim();
     }
 
     @Override

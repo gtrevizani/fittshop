@@ -97,4 +97,42 @@ class MercadoPagoPaymentGatewayTest {
             fail("Erro ao testar HMAC: " + e.getMessage());
         }
     }
+
+    @Test
+    @DisplayName("Deve invocar PaymentClient do SDK Oficial Mercado Pago quando accessToken configurado")
+    void shouldProcessPaymentViaOfficialMercadoPagoSdk() throws Exception {
+        com.mercadopago.client.payment.PaymentClient mockClient = org.mockito.Mockito.mock(com.mercadopago.client.payment.PaymentClient.class);
+        com.mercadopago.resources.payment.Payment mockPayment = org.mockito.Mockito.mock(com.mercadopago.resources.payment.Payment.class);
+        com.mercadopago.resources.payment.PaymentPointOfInteraction mockPoi = org.mockito.Mockito.mock(com.mercadopago.resources.payment.PaymentPointOfInteraction.class);
+        com.mercadopago.resources.payment.PaymentTransactionData mockTxData = org.mockito.Mockito.mock(com.mercadopago.resources.payment.PaymentTransactionData.class);
+
+        org.mockito.Mockito.when(mockPayment.getId()).thenReturn(987654321L);
+        org.mockito.Mockito.when(mockPayment.getStatus()).thenReturn("pending");
+        org.mockito.Mockito.when(mockPayment.getPointOfInteraction()).thenReturn(mockPoi);
+        org.mockito.Mockito.when(mockPoi.getTransactionData()).thenReturn(mockTxData);
+        org.mockito.Mockito.when(mockTxData.getQrCode()).thenReturn("00020126...official_mp_qr");
+        org.mockito.Mockito.when(mockTxData.getQrCodeBase64()).thenReturn("iVBORw0KGgoAAAANSUhEUgAA...");
+
+        org.mockito.Mockito.when(mockClient.create(org.mockito.ArgumentMatchers.any())).thenReturn(mockPayment);
+
+        MercadoPagoPaymentGatewayService sdkGateway = new MercadoPagoPaymentGatewayService(mockClient, "TEST-APP-TOKEN-123456");
+
+        Order order = new Order();
+        order.setOrderNumber("FITT-8899");
+        order.setTotalAmount(new BigDecimal("199.90"));
+
+        Customer customer = new Customer();
+        customer.setName("Guilherme");
+        customer.setEmail("guilherme@fittshop.com.br");
+        customer.setCpf("52998224725");
+
+        PaymentResult result = sdkGateway.processPayment(order, PaymentMethod.PIX, customer);
+
+        assertNotNull(result);
+        assertEquals("MP-987654321", result.getTransactionId());
+        assertEquals("PENDING", result.getStatus());
+        assertEquals("00020126...official_mp_qr", result.getPixCopiaECola());
+        assertTrue(result.getPixQrCodeBase64().startsWith("data:image/png;base64,"));
+        assertTrue(result.getMessage().contains("SDK Oficial"));
+    }
 }

@@ -41,6 +41,7 @@ public class CheckoutService {
     private final com.fittshop.service.affiliate.AffiliateService affiliateService;
     private final com.fittshop.service.notification.NotificationService notificationService;
     private final com.fittshop.service.coupon.CouponService couponService;
+    private final com.fittshop.service.customer.CpfCadastralVerificationService cpfCadastralVerificationService;
 
     @Value("${fittshop.business.free-shipping-threshold-sudeste:199.00}")
     private BigDecimal thresholdSudeste;
@@ -69,7 +70,8 @@ public class CheckoutService {
                            com.fittshop.service.payment.PaymentGatewayService paymentGatewayService,
                            com.fittshop.service.affiliate.AffiliateService affiliateService,
                            com.fittshop.service.notification.NotificationService notificationService,
-                           com.fittshop.service.coupon.CouponService couponService) {
+                           com.fittshop.service.coupon.CouponService couponService,
+                           com.fittshop.service.customer.CpfCadastralVerificationService cpfCadastralVerificationService) {
         this.productRepository = productRepository;
         this.orderRepository = orderRepository;
         this.customerRepository = customerRepository;
@@ -83,6 +85,9 @@ public class CheckoutService {
         this.affiliateService = affiliateService;
         this.notificationService = notificationService;
         this.couponService = couponService;
+        this.cpfCadastralVerificationService = cpfCadastralVerificationService != null
+                ? cpfCadastralVerificationService
+                : new com.fittshop.service.customer.CpfCadastralVerificationService();
     }
 
     public FreightResponse calculateFreight(FreightRequest request) {
@@ -317,9 +322,8 @@ public class CheckoutService {
 
     private Customer resolveCustomer(CheckoutRequest request) {
         if (request.getCustomerCpf() != null && !request.getCustomerCpf().isBlank()) {
-            if (!CpfValidator.isValid(request.getCustomerCpf())) {
-                throw new IllegalArgumentException("CPF inválido: os dígitos verificadores informados não conferem com a Receita Federal.");
-            }
+            // Auditoria cadastral em tempo real perante a Receita Federal do Brasil
+            cpfCadastralVerificationService.verify(request.getCustomerCpf());
         }
 
         if (request.getCustomerId() != null) {
