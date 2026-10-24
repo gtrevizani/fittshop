@@ -4,6 +4,10 @@
   "outputDirectory": "dist/fittshop-frontend/browser",
   "rewrites": [
     {
+      "source": "/api/:path*",
+      "destination": "https://fittshop-backend.onrender.com/api/:path*"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

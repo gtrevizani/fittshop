@@ -13,8 +13,8 @@ services:
       - key: FITTSHOP_JWT_SECRET
         generateValue: true
       - key: SPRING_DATASOURCE_URL
-        sync: false
+        value: jdbc:postgresql://ep-divine-union-b5svdwm6-pooler.c-7.us-east-2.aws.neon.tech/neondb?sslmode=require
       - key: SPRING_DATASOURCE_USERNAME
-        sync: false
+        value: neondb_owner
       - key: SPRING_DATASOURCE_PASSWORD
-        sync: false
+        value: npg_oQtA9XsLwFW0
