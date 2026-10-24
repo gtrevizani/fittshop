@@ -57,6 +57,15 @@ public class Order {
     @Column(length = 255)
     private String deliveryAddress;
 
+    @Column(length = 100)
+    private String externalTransactionId;
+
+    @Column(length = 50)
+    private String affiliateCode;
+
+    @Column(precision = 10, scale = 2)
+    private BigDecimal commissionAmount;
+
     private Integer fittCoinsEarned;
 
     private Integer fittCoinsRedeemed;
@@ -118,6 +127,15 @@ public class Order {
 
     public Integer getFittCoinsRedeemed() { return fittCoinsRedeemed; }
     public void setFittCoinsRedeemed(Integer fittCoinsRedeemed) { this.fittCoinsRedeemed = fittCoinsRedeemed; }
+
+    public String getExternalTransactionId() { return externalTransactionId; }
+    public void setExternalTransactionId(String externalTransactionId) { this.externalTransactionId = externalTransactionId; }
+
+    public String getAffiliateCode() { return affiliateCode; }
+    public void setAffiliateCode(String affiliateCode) { this.affiliateCode = affiliateCode; }
+
+    public BigDecimal getCommissionAmount() { return commissionAmount; }
+    public void setCommissionAmount(BigDecimal commissionAmount) { this.commissionAmount = commissionAmount; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

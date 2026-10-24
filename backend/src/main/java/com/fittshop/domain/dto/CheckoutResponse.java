@@ -21,6 +21,7 @@ public class CheckoutResponse {
     private String pixQrCodeBase64;
     private String pixCopiaECola;
     private Integer fittCoinsEarned;
+    private String externalTransactionId;
     private String message;
 
     public CheckoutResponse() {}
@@ -60,6 +61,9 @@ public class CheckoutResponse {
 
     public Integer getFittCoinsEarned() { return fittCoinsEarned; }
     public void setFittCoinsEarned(Integer fittCoinsEarned) { this.fittCoinsEarned = fittCoinsEarned; }
+
+    public String getExternalTransactionId() { return externalTransactionId; }
+    public void setExternalTransactionId(String externalTransactionId) { this.externalTransactionId = externalTransactionId; }
 
     public String getMessage() { return message; }
     public void setMessage(String message) { this.message = message; }

@@ -39,8 +39,32 @@ public class CheckoutController {
     }
 
     @PostMapping("/confirm/{orderNumber}")
-    @Operation(summary = "Webhook / Confirmação de Pagamento (PIX, Cartão ou Baixa pelo Caixa)")
+    @Operation(summary = "Webhook / Confirmação de Pagamento manual ou síncrona")
     public ResponseEntity<Order> confirmPayment(@PathVariable String orderNumber) {
         return ResponseEntity.ok(checkoutService.confirmPayment(orderNumber));
+    }
+
+    @PostMapping("/webhook/payment")
+    @Operation(summary = "Webhook assíncrono oficial para Gateways de Pagamento (Mercado Pago / Asaas)")
+    public ResponseEntity<java.util.Map<String, Object>> handlePaymentWebhook(
+            @RequestBody(required = false) java.util.Map<String, Object> payload,
+            @RequestHeader(value = "x-signature", required = false) String signature,
+            @RequestParam(value = "orderNumber", required = false) String orderNumber,
+            @RequestParam(value = "data.id", required = false) String externalTxId) {
+
+        String payloadStr = payload != null ? payload.toString() : "";
+        checkoutService.getPaymentGatewayService().handleWebhook(payloadStr, signature);
+
+        if (orderNumber != null && !orderNumber.isBlank()) {
+            checkoutService.confirmPayment(orderNumber);
+        } else if (externalTxId != null && !externalTxId.isBlank()) {
+            try {
+                checkoutService.confirmPaymentByExternalTransaction(externalTxId);
+            } catch (Exception ignored) {}
+        } else if (payload != null && payload.containsKey("orderNumber")) {
+            checkoutService.confirmPayment(payload.get("orderNumber").toString());
+        }
+
+        return ResponseEntity.ok(java.util.Map.of("status", "RECEIVED", "message", "Webhook processado com sucesso"));
     }
 }

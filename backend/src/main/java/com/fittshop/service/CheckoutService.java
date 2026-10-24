@@ -13,6 +13,7 @@ import com.fittshop.domain.enums.PaymentMethod;
 import com.fittshop.domain.enums.RoleType;
 import com.fittshop.domain.model.*;
 import com.fittshop.repository.*;
+import com.fittshop.service.payment.PaymentGatewayService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +35,7 @@ public class CheckoutService {
     private final SmartDiscountEngine discountEngine;
     private final FreightCalculationEngine freightEngine;
     private final LoyaltyFittCoinsEngine loyaltyEngine;
+    private final com.fittshop.service.payment.PaymentGatewayService paymentGatewayService;
 
     @Value("${fittshop.business.free-shipping-threshold-sudeste:199.00}")
     private BigDecimal thresholdSudeste;
@@ -57,7 +59,8 @@ public class CheckoutService {
                            InventoryService inventoryService,
                            SmartDiscountEngine discountEngine,
                            FreightCalculationEngine freightEngine,
-                           LoyaltyFittCoinsEngine loyaltyEngine) {
+                           LoyaltyFittCoinsEngine loyaltyEngine,
+                           com.fittshop.service.payment.PaymentGatewayService paymentGatewayService) {
         this.productRepository = productRepository;
         this.orderRepository = orderRepository;
         this.customerRepository = customerRepository;
@@ -66,6 +69,7 @@ public class CheckoutService {
         this.discountEngine = discountEngine;
         this.freightEngine = freightEngine;
         this.loyaltyEngine = loyaltyEngine;
+        this.paymentGatewayService = paymentGatewayService;
     }
 
     public FreightResponse calculateFreight(FreightRequest request) {
@@ -182,9 +186,12 @@ public class CheckoutService {
             order.addItem(oi);
         }
 
+        // 8. Processar Pagamento via Gateway Real (Mercado Pago / EMVCo PIX)
+        com.fittshop.domain.dto.PaymentResult paymentResult = paymentGatewayService.processPayment(order, request.getPaymentMethod(), customer);
+        order.setExternalTransactionId(paymentResult.getTransactionId());
         orderRepository.save(order);
 
-        // 8. Construir Resposta com payload de pagamento
+        // 9. Construir Resposta com payload de pagamento oficial
         CheckoutResponse response = new CheckoutResponse();
         response.setOrderNumber(orderNumber);
         response.setStatus(order.getStatus());
@@ -196,17 +203,10 @@ public class CheckoutService {
         response.setReservationUuid(reservationUuid);
         response.setReservationExpiresAt(LocalDateTime.now().plusSeconds(900));
         response.setFittCoinsEarned(loyaltyResult.getPointsEarned());
-
-        if (request.getPaymentMethod() == PaymentMethod.PIX) {
-            // Gera chave copia-e-cola e QR code simulados padrão Bacen
-            String pixPayload = "00020126580014BR.GOV.BCB.PIX0136fittshop-pagamentos@fittshop.com.br520400005303986540"
-                    + finalTotal.toString() + "5802BR5908FITTSHOP6009SAO PAULO62070503***6304" + orderNumber.substring(orderNumber.length() - 4);
-            response.setPixCopiaECola(pixPayload);
-            response.setPixQrCodeBase64("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><rect width='200' height='200' fill='black'/><text x='20' y='105' fill='%23ccff00' font-family='monospace' font-size='16'>PIX FITTSHOP OK</text></svg>");
-            response.setMessage("Pedido gerado com sucesso! Efetue o pagamento via PIX para garantir sua reserva de 15 minutos.");
-        } else {
-            response.setMessage("Pedido gerado com sucesso! Processando pagamento.");
-        }
+        response.setExternalTransactionId(paymentResult.getTransactionId());
+        response.setPixCopiaECola(paymentResult.getPixCopiaECola());
+        response.setPixQrCodeBase64(paymentResult.getPixQrCodeBase64());
+        response.setMessage(paymentResult.getMessage());
 
         return response;
     }
@@ -236,6 +236,18 @@ public class CheckoutService {
             return orderRepository.save(order);
         }
         return order;
+    }
+
+    public Order confirmPaymentByExternalTransaction(String externalTxId) {
+        Order order = orderRepository.findAll().stream()
+                .filter(o -> externalTxId.equals(o.getExternalTransactionId()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Pedido não encontrado para transação externa: " + externalTxId));
+        return confirmPayment(order.getOrderNumber());
+    }
+
+    public PaymentGatewayService getPaymentGatewayService() {
+        return paymentGatewayService;
     }
 
     public Order updateOrderStatus(String orderNumber, OrderStatus newStatus) {
