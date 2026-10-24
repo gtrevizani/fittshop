@@ -46,6 +46,10 @@ export class AppComponent {
   }
 
   toggleBackoffice(): void {
+    if (!this.authService.isStaff()) {
+      this.showBackoffice = false;
+      return;
+    }
     this.showBackoffice = !this.showBackoffice;
   }
 }

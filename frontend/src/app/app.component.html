@@ -8,11 +8,11 @@
   </app-header>
 
   <main>
-    <!-- Backoffice Panel when toggled or staff mode -->
-    <app-backoffice *ngIf="showBackoffice || authService.isStaff()"></app-backoffice>
+    <!-- Backoffice Panel strictly when authenticated staff and toggled -->
+    <app-backoffice *ngIf="showBackoffice && authService.isStaff()"></app-backoffice>
 
     <!-- Main Store Front for Athletes -->
-    <div *ngIf="!authService.isStaff() || showBackoffice">
+    <div *ngIf="!showBackoffice || !authService.isStaff()">
       <!-- Hero Banner -->
       <app-hero 
         (selectGoalEvent)="onGoalSelected($event)"

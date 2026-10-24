@@ -128,6 +128,10 @@ export class AuthService {
   }
 
   isStaff(): boolean {
-    return this.currentRole() !== 'ROLE_CUSTOMER';
+    if (!this.isAuthenticated()) {
+      return false;
+    }
+    const role = this.currentRole();
+    return ['ROLE_MANAGER', 'ROLE_ADMIN', 'ROLE_CASHIER', 'ROLE_STOCKIST', 'ROLE_SELLER'].includes(role);
   }
 }

@@ -5,19 +5,9 @@
         <span class="pulse-dot"></span>
         <span>🔥 <strong>FittShop Performance</strong> — Envio Imediato para todo o Brasil | Frete Grátis acima de R$ 199</span>
       </div>
-      <div class="role-selector-bar">
-        <span class="role-label">Visão Operacional:</span>
-        <div class="role-pills">
-          <button 
-            *ngFor="let r of roles"
-            class="role-pill"
-            [class.active]="authService.currentRole() === r.value"
-            (click)="setRole(r.value)"
-            [title]="'Alternar para visão de ' + r.label">
-            <span>{{ r.icon }}</span>
-            <span>{{ r.label }}</span>
-          </button>
-        </div>
+      <div *ngIf="authService.isStaff()" class="role-selector-bar" style="background: rgba(0, 240, 255, 0.1); border: 1px solid rgba(0, 240, 255, 0.3); border-radius: 6px; padding: 3px 10px;">
+        <span class="role-label" style="color: #00f0ff;">🛡️ Sessão Corporativa:</span>
+        <span style="font-size: 0.75rem; color: #fff; font-weight: 600;">{{ authService.currentRole().replace('ROLE_', '') }}</span>
       </div>
     </div>
   </div>
@@ -56,8 +46,8 @@
           <span>Consultor <strong>NutriFit IA</strong></span>
         </button>
 
-        <!-- Backoffice Toggle Button (if staff or clicked) -->
-        <button class="backoffice-btn" (click)="toggleBackofficeEvent.emit()">
+        <!-- Backoffice Toggle Button (only if authenticated staff) -->
+        <button *ngIf="authService.isStaff()" class="backoffice-btn" (click)="toggleBackofficeEvent.emit()">
           <span>⚙️</span>
           <span>Gestão</span>
         </button>
