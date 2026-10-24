@@ -8,6 +8,7 @@ import { CartDrawerComponent } from './components/cart-drawer/cart-drawer.compon
 import { CheckoutModalComponent } from './components/checkout-modal/checkout-modal.component';
 import { BackofficeComponent } from './components/backoffice/backoffice.component';
 import { AuthModalComponent } from './components/auth-modal/auth-modal.component';
+import { OrdersModalComponent } from './components/orders-modal/orders-modal.component';
 import { CartService } from './services/cart.service';
 import { AuthService } from './services/auth.service';
 
@@ -23,7 +24,8 @@ import { AuthService } from './services/auth.service';
     CartDrawerComponent,
     CheckoutModalComponent,
     BackofficeComponent,
-    AuthModalComponent
+    AuthModalComponent,
+    OrdersModalComponent
   ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']

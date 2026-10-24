@@ -43,6 +43,9 @@
   <!-- Athlete Auth / Login & Register Modal -->
   <app-auth-modal *ngIf="showAuthModal || authService.isAuthModalOpen()" (closeEvent)="showAuthModal = false; authService.closeLoginModal()"></app-auth-modal>
 
+  <!-- Athlete Orders Tracking Modal -->
+  <app-orders-modal *ngIf="showOrdersModal" (closeEvent)="showOrdersModal = false"></app-orders-modal>
+
   <!-- Modern Fitness Footer -->
   <footer class="fitt-footer">
     <div class="footer-container">

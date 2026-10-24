@@ -1,0 +1,81 @@
+<div class="modal-overlay" (click)="closeEvent.emit()">
+  <div class="orders-modal card-glass" (click)="$event.stopPropagation()">
+    <!-- Header -->
+    <div class="orders-header">
+      <div class="brand-head">
+        <span class="orders-icon">📦</span>
+        <div>
+          <h2>Central de Pedidos do Atleta</h2>
+          <span class="user-sub">Histórico & Rastreamento em Tempo Real de <strong>{{ authService.currentUserName() }}</strong></span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="refresh-btn" (click)="loadOrders()" title="Atualizar Pedidos">🔄 Atualizar</button>
+        <button class="close-btn" (click)="closeEvent.emit()">✕</button>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="orders-body">
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="loading-state">
+        <div class="spinner"></div>
+        <p>Consultando pedidos na nuvem FittShop...</p>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="!isLoading && orders.length === 0" class="empty-state">
+        <span class="empty-icon">🛒</span>
+        <h3>Nenhum pedido encontrado</h3>
+        <p>Você ainda não realizou compras com esta conta de atleta. Explore nosso catálogo de alta performance e monte seu combo personalizado!</p>
+        <button class="btn-primary" (click)="closeEvent.emit()">Explorar Catálogo</button>
+      </div>
+
+      <!-- Orders List -->
+      <div *ngIf="!isLoading && orders.length > 0" class="orders-list">
+        <div *ngFor="let order of orders" class="order-card">
+          <div class="order-card-header">
+            <div class="order-meta">
+              <span class="order-number">{{ order.orderNumber }}</span>
+              <span class="order-date">{{ order.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+            </div>
+            <span class="status-badge" [ngClass]="getStatusBadgeClass(order.status)">
+              {{ getStatusLabel(order.status) }}
+            </span>
+          </div>
+
+          <div class="order-card-body">
+            <!-- Tracking Code if available -->
+            <div *ngIf="order.trackingCode" class="tracking-pill">
+              <span class="track-icon">🚚</span>
+              <span>Rastreio Melhor Envio: <strong>{{ order.trackingCode }}</strong></span>
+            </div>
+
+            <!-- Items summary -->
+            <div class="items-list" *ngIf="order.items && order.items.length > 0">
+              <div *ngFor="let item of order.items" class="order-item-row">
+                <span class="item-name">{{ item.quantity }}x {{ item.productName }}</span>
+                <span class="item-price">R$ {{ (item.totalPrice || item.unitPrice * item.quantity).toFixed(2) }}</span>
+              </div>
+            </div>
+
+            <div class="order-address" *ngIf="order.deliveryAddress">
+              <span>📍 Entrega: {{ order.deliveryAddress }} (CEP: {{ order.deliveryZipCode }})</span>
+            </div>
+          </div>
+
+          <div class="order-card-footer">
+            <div class="payment-info">
+              <span>Método: <strong>{{ order.paymentMethod }}</strong></span>
+              <span *ngIf="order.fittCoinsEarned" class="coins-earned">+{{ order.fittCoinsEarned }} FittCoins acumulados</span>
+            </div>
+            <div class="order-total">
+              <span class="total-label">Total Pago:</span>
+              <span class="total-value">R$ {{ order.totalAmount.toFixed(2) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

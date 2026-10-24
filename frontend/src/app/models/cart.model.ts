@@ -42,3 +42,31 @@ export interface CheckoutResult {
   fittCoinsEarned: number;
   message: string;
 }
+
+export interface OrderItemData {
+  id?: number;
+  productId: number;
+  productName: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+}
+
+export interface OrderData {
+  id: number;
+  orderNumber: string;
+  customerId: number;
+  status: string;
+  subtotal: number;
+  discountAmount: number;
+  freightAmount: number;
+  totalAmount: number;
+  paymentMethod: string;
+  trackingCode?: string;
+  deliveryAddress?: string;
+  deliveryZipCode?: string;
+  fittCoinsEarned?: number;
+  fittCoinsRedeemed?: number;
+  createdAt: string;
+  items?: OrderItemData[];
+}

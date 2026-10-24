@@ -26,8 +26,13 @@ public class OrderController {
     }
 
     @GetMapping
-    @Operation(summary = "Lista todos os pedidos ou filtra por status")
-    public ResponseEntity<List<Order>> getOrders(@RequestParam(required = false) OrderStatus status) {
+    @Operation(summary = "Lista todos os pedidos ou filtra por status e cliente")
+    public ResponseEntity<List<Order>> getOrders(
+            @RequestParam(required = false) OrderStatus status,
+            @RequestParam(required = false) Long customerId) {
+        if (customerId != null) {
+            return ResponseEntity.ok(orderRepository.findByCustomerIdOrderByCreatedAtDesc(customerId));
+        }
         if (status != null) {
             return ResponseEntity.ok(orderRepository.findByStatusOrderByCreatedAtDesc(status));
         }
