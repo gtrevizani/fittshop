@@ -1,7 +1,9 @@
 package com.fittshop.controller;
 
 import com.fittshop.domain.enums.OrderStatus;
+import com.fittshop.domain.model.Customer;
 import com.fittshop.domain.model.Order;
+import com.fittshop.repository.CustomerRepository;
 import com.fittshop.repository.OrderRepository;
 import com.fittshop.service.CheckoutService;
 import io.swagger.v3.oas.annotations.Operation;
