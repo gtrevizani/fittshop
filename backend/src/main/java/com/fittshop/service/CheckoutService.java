@@ -34,6 +34,7 @@ public class CheckoutService {
     private final InventoryService inventoryService;
     private final SmartDiscountEngine discountEngine;
     private final FreightCalculationEngine freightEngine;
+    private final com.fittshop.service.freight.FreightCarrierService freightCarrierService;
     private final LoyaltyFittCoinsEngine loyaltyEngine;
     private final com.fittshop.service.payment.PaymentGatewayService paymentGatewayService;
 
@@ -59,6 +60,7 @@ public class CheckoutService {
                            InventoryService inventoryService,
                            SmartDiscountEngine discountEngine,
                            FreightCalculationEngine freightEngine,
+                           com.fittshop.service.freight.FreightCarrierService freightCarrierService,
                            LoyaltyFittCoinsEngine loyaltyEngine,
                            com.fittshop.service.payment.PaymentGatewayService paymentGatewayService) {
         this.productRepository = productRepository;
@@ -68,6 +70,7 @@ public class CheckoutService {
         this.inventoryService = inventoryService;
         this.discountEngine = discountEngine;
         this.freightEngine = freightEngine;
+        this.freightCarrierService = freightCarrierService;
         this.loyaltyEngine = loyaltyEngine;
         this.paymentGatewayService = paymentGatewayService;
     }
@@ -90,7 +93,7 @@ public class CheckoutService {
             }
         }
 
-        FreightCalculationEngine.FreightResult result = freightEngine.calculate(
+        FreightCalculationEngine.FreightResult result = freightCarrierService.calculateShipping(
                 request.getZipCode(), subtotal, totalWeight, thresholdSudeste, thresholdOutros
         );
 
@@ -145,8 +148,8 @@ public class CheckoutService {
                 fittCoinsRedemptionValue, fittCoinsMaxDiscountPercentage
         );
 
-        // 5. Cálculo do Frete
-        FreightCalculationEngine.FreightResult freightResult = freightEngine.calculate(
+        // 5. Cálculo do Frete com Transportadoras / Melhor Envio
+        FreightCalculationEngine.FreightResult freightResult = freightCarrierService.calculateShipping(
                 request.getDeliveryZipCode(), discountSummary.getNetSubtotal(), totalWeight, thresholdSudeste, thresholdOutros
         );
 
