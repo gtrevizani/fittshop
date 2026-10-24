@@ -29,7 +29,10 @@ public class AffiliateService {
             "SARAH10", new AffiliateInfo("Sarah Nutricionista Esportiva", new BigDecimal("0.10"), new BigDecimal("0.10")),
             "TREINADORVIP", new AffiliateInfo("Prof. Rodrigo Personal Trainer", new BigDecimal("0.12"), new BigDecimal("0.10")),
             "FITCOACH", new AffiliateInfo("Coach Felipe Performance", new BigDecimal("0.15"), new BigDecimal("0.05")),
-            "ALEX10", new AffiliateInfo("Alex Crossfit Head Coach", new BigDecimal("0.10"), new BigDecimal("0.10"))
+            "ALEX10", new AffiliateInfo("Alex Crossfit Head Coach", new BigDecimal("0.10"), new BigDecimal("0.10")),
+            "FITT10", new AffiliateInfo("Cupom Oficial FittShop 10%", BigDecimal.ZERO, new BigDecimal("0.10")),
+            "MONSTRO15", new AffiliateInfo("Cupom Promocional Monstro 15%", BigDecimal.ZERO, new BigDecimal("0.15")),
+            "BEMVINDO20", new AffiliateInfo("Cupom de Boas-Vindas 20%", BigDecimal.ZERO, new BigDecimal("0.20"))
     );
 
     private record AffiliateInfo(String name, BigDecimal commissionRate, BigDecimal clientDiscountRate) {}

@@ -2,9 +2,16 @@ import { Injectable, computed, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CartItem, CheckoutRequestPayload, CheckoutResult, FreightQuote } from '../models/cart.model';
 import { Product } from '../models/product.model';
-import { Observable, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { Observable, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
+
+export interface AffiliateValidateResponse {
+  valid: boolean;
+  affiliateCode: string;
+  affiliateName: string;
+  commissionRate: number;
+  discountPercentage: number;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -19,10 +26,13 @@ export class CartService {
   lastOrderResult = signal<CheckoutResult | null>(null);
 
   couponCode = signal<string>('');
+  couponDiscountRate = signal<number>(0);
+  couponAffiliateName = signal<string>('');
   fittCoinsToRedeem = signal<number>(0);
   userFittCoinsBalance = signal<number>(120); // 120 FittCoins = R$ 60,00 de saldo inicial
   sellerCode = signal<string>('');
   freightQuote = signal<FreightQuote | null>(null);
+  isCalculatingFreight = signal<boolean>(false);
 
   // Computeds
   itemCount = computed(() => this.items().reduce((acc, item) => acc + item.quantity, 0));
@@ -43,6 +53,11 @@ export class CartService {
   });
 
   couponDiscount = computed(() => {
+    const rate = this.couponDiscountRate();
+    if (rate > 0) {
+      return Number((this.subtotal() * rate).toFixed(2));
+    }
+    // Fallback retrocompatível para cupons padrão
     const code = this.couponCode().trim().toUpperCase();
     if (code === 'FITT10') return Number((this.subtotal() * 0.10).toFixed(2));
     if (code === 'MONSTRO15') return Number((this.subtotal() * 0.15).toFixed(2));
@@ -159,18 +174,28 @@ export class CartService {
   clearCart(): void {
     this.items.set([]);
     this.couponCode.set('');
+    this.couponDiscountRate.set(0);
+    this.couponAffiliateName.set('');
     this.fittCoinsToRedeem.set(0);
     this.freightQuote.set(null);
     this.saveToStorage();
   }
 
-  applyCoupon(code: string): boolean {
+  applyCoupon(code: string): Observable<AffiliateValidateResponse> {
     const clean = code.trim().toUpperCase();
-    if (['FITT10', 'MONSTRO15', 'BEMVINDO20'].includes(clean)) {
-      this.couponCode.set(clean);
-      return true;
-    }
-    return false;
+    return this.http.get<AffiliateValidateResponse>(`${environment.apiUrl}/affiliates/validate/${clean}`).pipe(
+      tap((res) => {
+        if (res.valid) {
+          this.couponCode.set(res.affiliateCode);
+          this.couponDiscountRate.set(res.discountPercentage);
+          this.couponAffiliateName.set(res.affiliateName);
+        } else {
+          this.couponCode.set('');
+          this.couponDiscountRate.set(0);
+          this.couponAffiliateName.set('');
+        }
+      })
+    );
   }
 
   setFittCoinsRedemption(coins: number): void {
@@ -179,19 +204,29 @@ export class CartService {
     this.fittCoinsToRedeem.set(safeCoins);
   }
 
-  calculateFreight(zipCode: string): void {
+  calculateFreight(zipCode: string): Observable<FreightQuote> {
+    this.isCalculatingFreight.set(true);
     const cleanZip = zipCode.replace(/\D/g, '');
-    const isSudeste = cleanZip.startsWith('0') || cleanZip.startsWith('1') || cleanZip.startsWith('2') || cleanZip.startsWith('3');
-    const isFree = this.subtotal() >= (isSudeste ? 199 : 299);
-
-    const quote: FreightQuote = {
-      carrierName: isFree ? 'FittExpress (Frete Grátis Atleta)' : 'FittLog Transportes',
-      estimatedDeliveryDays: isSudeste ? 2 : 5,
-      freeShipping: isFree,
-      freightAmount: isFree ? 0 : (isSudeste ? 14.90 : 29.90)
+    const payload = {
+      zipCode: cleanZip,
+      subtotal: this.subtotal(),
+      items: this.items().map(i => ({
+        productId: i.product.id,
+        quantity: i.quantity
+      }))
     };
 
-    this.freightQuote.set(quote);
+    return this.http.post<FreightQuote>(`${environment.apiUrl}/checkout/freight`, payload).pipe(
+      tap({
+        next: (quote) => {
+          this.freightQuote.set(quote);
+          this.isCalculatingFreight.set(false);
+        },
+        error: () => {
+          this.isCalculatingFreight.set(false);
+        }
+      })
+    );
   }
 
   submitCheckout(payload: CheckoutRequestPayload): Observable<CheckoutResult> {

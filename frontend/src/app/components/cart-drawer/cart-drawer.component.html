@@ -87,8 +87,8 @@
         <!-- Coupon Code -->
         <div class="tool-box">
           <div class="coupon-input-group">
-            <input type="text" placeholder="Cupom (ex: FITT10)" [(ngModel)]="couponInput" (keyup.enter)="applyCoupon()">
-            <button (click)="applyCoupon()">Aplicar</button>
+            <input type="text" placeholder="Cupom / Código Consultor (ex: SARAH10)" [(ngModel)]="couponInput" (keyup.enter)="applyCoupon()" [disabled]="isValidatingCoupon">
+            <button (click)="applyCoupon()" [disabled]="isValidatingCoupon">{{ isValidatingCoupon ? '...' : 'Aplicar' }}</button>
           </div>
           <span *ngIf="couponMessage" class="coupon-msg" [class.success]="couponSuccess">
             {{ couponMessage }}
@@ -98,9 +98,10 @@
         <!-- Freight Simulator -->
         <div class="tool-box">
           <div class="coupon-input-group">
-            <input type="text" placeholder="Calcular Frete (CEP)" [(ngModel)]="zipCodeInput" (keyup.enter)="onCalculateFreight()">
-            <button (click)="onCalculateFreight()">Calcular</button>
+            <input type="text" placeholder="Calcular Frete (CEP)" [(ngModel)]="zipCodeInput" (keyup.enter)="onCalculateFreight()" [disabled]="isCalculatingFreight">
+            <button (click)="onCalculateFreight()" [disabled]="isCalculatingFreight">{{ isCalculatingFreight ? '...' : 'Calcular' }}</button>
           </div>
+          <small *ngIf="freightErrorMessage" style="color: #ff4d4f; font-size: 0.75rem; margin-top: 4px; display: block;">{{ freightErrorMessage }}</small>
           <div *ngIf="cartService.freightQuote()" class="freight-result-pill">
             <span>{{ cartService.freightQuote()?.carrierName }} ({{ cartService.freightQuote()?.estimatedDeliveryDays }} dias):</span>
             <strong>{{ cartService.freightQuote()?.freeShipping ? 'GRÁTIS' : 'R$ ' + cartService.freightAmount().toFixed(2) }}</strong>
