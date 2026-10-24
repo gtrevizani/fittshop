@@ -54,4 +54,10 @@ public class OrderController {
             @RequestParam OrderStatus status) {
         return ResponseEntity.ok(checkoutService.updateOrderStatus(orderNumber, status));
     }
+
+    @GetMapping("/{orderNumber}/notifications")
+    @Operation(summary = "Lista histórico de notificações transacionais (WhatsApp e E-mail) do pedido")
+    public ResponseEntity<List<com.fittshop.service.notification.NotificationService.NotificationLog>> getOrderNotifications(@PathVariable String orderNumber) {
+        return ResponseEntity.ok(checkoutService.getNotificationService().getNotificationsForOrder(orderNumber));
+    }
 }

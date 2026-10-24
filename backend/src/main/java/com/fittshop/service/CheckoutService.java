@@ -39,6 +39,7 @@ public class CheckoutService {
     private final LoyaltyFittCoinsEngine loyaltyEngine;
     private final com.fittshop.service.payment.PaymentGatewayService paymentGatewayService;
     private final com.fittshop.service.affiliate.AffiliateService affiliateService;
+    private final com.fittshop.service.notification.NotificationService notificationService;
 
     @Value("${fittshop.business.free-shipping-threshold-sudeste:199.00}")
     private BigDecimal thresholdSudeste;
@@ -65,7 +66,8 @@ public class CheckoutService {
                            com.fittshop.service.freight.FreightCarrierService freightCarrierService,
                            LoyaltyFittCoinsEngine loyaltyEngine,
                            com.fittshop.service.payment.PaymentGatewayService paymentGatewayService,
-                           com.fittshop.service.affiliate.AffiliateService affiliateService) {
+                           com.fittshop.service.affiliate.AffiliateService affiliateService,
+                           com.fittshop.service.notification.NotificationService notificationService) {
         this.productRepository = productRepository;
         this.orderRepository = orderRepository;
         this.customerRepository = customerRepository;
@@ -77,6 +79,7 @@ public class CheckoutService {
         this.loyaltyEngine = loyaltyEngine;
         this.paymentGatewayService = paymentGatewayService;
         this.affiliateService = affiliateService;
+        this.notificationService = notificationService;
     }
 
     public FreightResponse calculateFreight(FreightRequest request) {
@@ -206,6 +209,9 @@ public class CheckoutService {
 
         orderRepository.save(order);
 
+        // Notificação Transacional (WhatsApp & E-mail)
+        notificationService.notifyOrderCreated(order, customer);
+
         // 9. Construir Resposta com payload de pagamento oficial
         CheckoutResponse response = new CheckoutResponse();
         response.setOrderNumber(orderNumber);
@@ -251,7 +257,10 @@ public class CheckoutService {
             // Aprova comissão do consultor/afiliado
             affiliateService.approveCommissionForOrder(order.getOrderNumber());
 
-            return orderRepository.save(order);
+            Order saved = orderRepository.save(order);
+            Customer customer = customerRepository.findById(order.getCustomerId()).orElse(null);
+            notificationService.notifyPaymentConfirmed(saved, customer);
+            return saved;
         }
         return order;
     }
@@ -268,11 +277,18 @@ public class CheckoutService {
         return paymentGatewayService;
     }
 
+    public com.fittshop.service.notification.NotificationService getNotificationService() {
+        return notificationService;
+    }
+
     public Order updateOrderStatus(String orderNumber, OrderStatus newStatus) {
         Order order = orderRepository.findByOrderNumber(orderNumber)
                 .orElseThrow(() -> new IllegalArgumentException("Pedido não encontrado: " + orderNumber));
         order.setStatus(newStatus);
-        return orderRepository.save(order);
+        Order saved = orderRepository.save(order);
+        Customer customer = customerRepository.findById(order.getCustomerId()).orElse(null);
+        notificationService.notifyOrderStatusChanged(saved, customer, newStatus);
+        return saved;
     }
 
     private Customer resolveCustomer(CheckoutRequest request) {
