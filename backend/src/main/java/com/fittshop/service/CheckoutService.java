@@ -13,6 +13,7 @@ import com.fittshop.domain.enums.PaymentMethod;
 import com.fittshop.domain.enums.RoleType;
 import com.fittshop.domain.model.*;
 import com.fittshop.repository.*;
+import com.fittshop.domain.validation.CpfValidator;
 import com.fittshop.service.payment.PaymentGatewayService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -275,6 +276,12 @@ public class CheckoutService {
     }
 
     private Customer resolveCustomer(CheckoutRequest request) {
+        if (request.getCustomerCpf() != null && !request.getCustomerCpf().isBlank()) {
+            if (!CpfValidator.isValid(request.getCustomerCpf())) {
+                throw new IllegalArgumentException("CPF inválido: os dígitos verificadores informados não conferem com a Receita Federal.");
+            }
+        }
+
         if (request.getCustomerId() != null) {
             return customerRepository.findById(request.getCustomerId()).orElse(null);
         }
@@ -287,7 +294,7 @@ public class CheckoutService {
             c.setName(request.getCustomerName() != null ? request.getCustomerName() : "Atleta FittShop");
             c.setEmail(email);
             c.setPassword("{noop}fitt123");
-            c.setCpf(request.getCustomerCpf() != null ? request.getCustomerCpf() : "123.456.789-00");
+            c.setCpf(request.getCustomerCpf() != null ? CpfValidator.format(request.getCustomerCpf()) : "529.982.247-25");
             c.setPhone(request.getCustomerPhone() != null ? request.getCustomerPhone() : "(11) 99999-9999");
             c.setRole(RoleType.ROLE_CUSTOMER);
             return customerRepository.save(c);

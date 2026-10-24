@@ -19,7 +19,7 @@ export class CheckoutModalComponent implements OnInit, OnDestroy {
 
   customerName = 'Lucas Atleta';
   customerEmail = 'atleta@fittshop.com.br';
-  customerCpf = '123.456.789-00';
+  customerCpf = '529.982.247-25';
   customerPhone = '(11) 98888-7777';
   deliveryZipCode = '01310-100';
   deliveryAddress = 'Av. Paulista, 1500 - Apto 82, Bela Vista, São Paulo - SP';
@@ -122,8 +122,8 @@ export class CheckoutModalComponent implements OnInit, OnDestroy {
     this.submitErrorMessage = '';
     this.warmingUpNotice = false;
     const cleanCpf = this.customerCpf.replace(/\D/g, '');
-    if (cleanCpf.length === 11 && !this.validateCpf(this.customerCpf)) {
-      this.cpfErrorMessage = 'CPF inválido. Verifique os dígitos digitados.';
+    if (cleanCpf.length !== 11 || !this.validateCpf(this.customerCpf)) {
+      this.cpfErrorMessage = 'CPF inválido: os dígitos verificadores informados não conferem com a Receita Federal.';
       return;
     }
     this.isSubmitting = true;
