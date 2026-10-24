@@ -128,14 +128,11 @@ export class AuthService {
         if (typeof window !== 'undefined' && window.localStorage) {
           localStorage.setItem(this.USER_KEY, JSON.stringify(updated));
         }
-      } catch (e) {}
+      } catch (e) {
+        console.warn('Erro ao atualizar role no storage:', e);
+      }
     } else {
-      this.currentUser.set({
-        userId: 0,
-        name: 'Usuário ' + role.replace('ROLE_', ''),
-        email: 'user@fittshop.com.br',
-        role
-      });
+      console.warn('Operação rejeitada: impossível definir role sem sessão autenticada.');
     }
   }
 

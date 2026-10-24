@@ -34,6 +34,7 @@ export class BackofficeComponent implements OnInit {
   newBatchCode = 'LOTE-FITT-2026';
   newExpirationDate = '2028-06-30';
   estoqueSuccessMessage = '';
+  estoqueErrorMessage = '';
 
   // Caixa & Fulfillment state
   caixaOrders: any[] = [];
@@ -199,13 +200,15 @@ export class BackofficeComponent implements OnInit {
     ).subscribe({
       next: () => {
         this.estoqueSuccessMessage = `✅ Fardo recebido com sucesso no banco de dados! +${this.replenishQuantity} unidades adicionadas ao estoque com lote ${this.newBatchCode}.`;
+        this.estoqueErrorMessage = '';
         this.fetchAuditLogs();
         setTimeout(() => (this.estoqueSuccessMessage = ''), 4000);
       },
-      error: () => {
-        this.productService.adjustStockLocal(this.selectedProductId!, Number(this.replenishQuantity));
-        this.estoqueSuccessMessage = `✅ Fardo recebido! +${this.replenishQuantity} unidades adicionadas.`;
-        setTimeout(() => (this.estoqueSuccessMessage = ''), 4000);
+      error: (err) => {
+        console.error('Falha ao registrar reposição de estoque no backend:', err);
+        this.estoqueErrorMessage = '❌ Falha ao sincronizar com o banco de dados. A operação não pôde ser concluída.';
+        this.estoqueSuccessMessage = '';
+        setTimeout(() => (this.estoqueErrorMessage = ''), 5000);
       }
     });
   }

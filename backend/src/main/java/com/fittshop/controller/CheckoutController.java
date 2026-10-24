@@ -9,6 +9,8 @@ import com.fittshop.service.CheckoutService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +20,8 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Checkout & Pagamentos", description = "Endpoints para cálculo de frete, finalização de compra e confirmação de pagamento")
 @CrossOrigin(origins = "*")
 public class CheckoutController {
+
+    private static final Logger log = LoggerFactory.getLogger(CheckoutController.class);
 
     private final CheckoutService checkoutService;
     private final com.fittshop.service.coupon.CouponService couponService;
@@ -74,7 +78,11 @@ public class CheckoutController {
         } else if (externalTxId != null && !externalTxId.isBlank()) {
             try {
                 checkoutService.confirmPaymentByExternalTransaction(externalTxId);
-            } catch (Exception ignored) {}
+            } catch (Exception ex) {
+                log.error("Falha ao confirmar pagamento via webhook para externalTxId {}: {}", externalTxId, ex.getMessage(), ex);
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(java.util.Map.of("status", "ERROR", "message", "Erro interno ao processar transacao: " + ex.getMessage()));
+            }
         } else if (payload != null && payload.containsKey("orderNumber")) {
             checkoutService.confirmPayment(payload.get("orderNumber").toString());
         }

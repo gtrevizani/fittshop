@@ -17,12 +17,12 @@ import { environment } from '../../../environments/environment';
 export class CheckoutModalComponent implements OnInit, OnDestroy {
   step: 'FORM' | 'CONFIRMATION' = 'FORM';
 
-  customerName = 'Lucas Atleta';
-  customerEmail = 'atleta@fittshop.com.br';
-  customerCpf = '529.982.247-25';
-  customerPhone = '(11) 98888-7777';
-  deliveryZipCode = '01310-100';
-  deliveryAddress = 'Av. Paulista, 1500 - Apto 82, Bela Vista, São Paulo - SP';
+  customerName = '';
+  customerEmail = '';
+  customerCpf = '';
+  customerPhone = '';
+  deliveryZipCode = '';
+  deliveryAddress = '';
   paymentMethod: 'PIX' | 'CREDIT_CARD' | 'BOLETO' = 'PIX';
   sellerCode = '';
 

@@ -27,4 +27,4 @@ Thumbs.db
 *.pem
 *.key
 backend/run_neon.ps1
-
+.cache/

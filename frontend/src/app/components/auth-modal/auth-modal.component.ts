@@ -17,8 +17,8 @@ export class AuthModalComponent {
   mode: 'LOGIN' | 'REGISTER' = 'LOGIN';
 
   // Login fields
-  loginEmail = 'atleta@fittshop.com.br';
-  loginPassword = 'password123';
+  loginEmail = '';
+  loginPassword = '';
 
   // Register fields
   registerName = '';
