@@ -34,6 +34,7 @@ export class AppComponent {
   showRecommenderModal = false;
   showBackoffice = false;
   showAuthModal = false;
+  showOrdersModal = false;
 
   constructor(public cartService: CartService, public authService: AuthService) {}
 

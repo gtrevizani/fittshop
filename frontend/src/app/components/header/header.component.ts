@@ -16,16 +16,9 @@ export class HeaderComponent {
   @Output() openRecommenderEvent = new EventEmitter<void>();
   @Output() toggleBackofficeEvent = new EventEmitter<void>();
   @Output() openAuthEvent = new EventEmitter<void>();
+  @Output() openOrdersEvent = new EventEmitter<void>();
 
   searchTerm = '';
-
-  roles: { label: string; value: UserRole; icon: string }[] = [
-    { label: 'Atleta (Cliente)', value: 'ROLE_CUSTOMER', icon: '🏋️' },
-    { label: 'Estoquista', value: 'ROLE_STOCKIST', icon: '📦' },
-    { label: 'Caixa / PDV', value: 'ROLE_CASHIER', icon: '💳' },
-    { label: 'Vendedora', value: 'ROLE_SELLER', icon: '🏷️' },
-    { label: 'Gerente', value: 'ROLE_MANAGER', icon: '📊' }
-  ];
 
   constructor(public cartService: CartService, public authService: AuthService) {}
 
@@ -33,10 +26,7 @@ export class HeaderComponent {
     this.searchEvent.emit(this.searchTerm);
   }
 
-  setRole(role: UserRole): void {
-    this.authService.setRole(role);
-    if (this.authService.isStaff()) {
-      this.toggleBackofficeEvent.emit();
-    }
+  onLogout(): void {
+    this.authService.logout();
   }
 }

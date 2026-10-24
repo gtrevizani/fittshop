@@ -52,8 +52,8 @@
           <span>Gestão</span>
         </button>
 
-        <!-- FittCoins Balance Pill -->
-        <div class="fittcoins-pill" title="Seu saldo de cashback FittCoins">
+        <!-- FittCoins Balance Pill (Exclusively for Authenticated Athletes) -->
+        <div *ngIf="authService.isAuthenticated()" class="fittcoins-pill" title="Seu saldo de cashback FittCoins">
           <span class="coin-icon">🟡</span>
           <div class="coin-info">
             <span class="coin-qty">{{ cartService.userFittCoinsBalance() }} FittCoins</span>
@@ -61,11 +61,27 @@
           </div>
         </div>
 
-        <!-- User Profile Button -->
-        <button class="user-profile-btn" (click)="openAuthEvent.emit()" title="Minha Conta / Autenticação">
-          <span>👤</span>
-          <span class="user-name-text">{{ authService.currentUserName() }}</span>
+        <!-- Unauthenticated Public Visitor CTA -->
+        <button *ngIf="!authService.isAuthenticated()" class="auth-cta-btn" (click)="openAuthEvent.emit()" title="Entrar ou Criar Conta de Atleta">
+          <span class="auth-icon">⚡</span>
+          <span>Entrar / Cadastrar</span>
         </button>
+
+        <!-- Authenticated Athlete Nav Bar (Profile, Orders, Logout) -->
+        <div *ngIf="authService.isAuthenticated()" class="auth-user-dropdown-container">
+          <button class="user-profile-btn" (click)="openOrdersEvent.emit()" title="Visualizar Meus Pedidos">
+            <span>👤</span>
+            <span class="user-name-text">{{ authService.currentUserName() }}</span>
+            <span class="verified-badge" title="Atleta Oficial">✓</span>
+          </button>
+          <button class="orders-nav-btn" (click)="openOrdersEvent.emit()" title="Rastrear Pedidos em Tempo Real">
+            <span>📦</span>
+            <span class="nav-label">Pedidos</span>
+          </button>
+          <button class="logout-btn" (click)="onLogout()" title="Sair da Conta">
+            <span>🚪</span>
+          </button>
+        </div>
 
         <!-- Cart Button -->
         <button class="cart-btn" (click)="cartService.isCartOpen.set(true)" aria-label="Abrir Sacola de Compras">
