@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: ${PORT:8080}
   servlet:
     context-path: /api
 
@@ -64,13 +64,14 @@ spring:
     activate:
       on-profile: prod
   datasource:
-    url: jdbc:postgresql://${DB_HOST:postgres-db}:${DB_PORT:5432}/${DB_NAME:fittshopdb}
+    url: ${SPRING_DATASOURCE_URL:${DATABASE_URL:jdbc:postgresql://${DB_HOST:postgres-db}:${DB_PORT:5432}/${DB_NAME:fittshopdb}}}
     driverClassName: org.postgresql.Driver
-    username: ${DB_USER:fittuser}
-    password: ${DB_PASS:fittpassword}
+    username: ${SPRING_DATASOURCE_USERNAME:${DB_USER:fittuser}}
+    password: ${SPRING_DATASOURCE_PASSWORD:${DB_PASS:fittpassword}}
   jpa:
     hibernate:
       ddl-auto: validate
   h2:
     console:
       enabled: false
+
