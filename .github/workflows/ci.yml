@@ -41,8 +41,12 @@ jobs:
       - name: Build and Run Algorithm Unit Tests
         working-directory: ./backend
         run: |
-          chmod +x mvnw
-          ./mvnw clean test -B
+          chmod +x mvnw || true
+          if [ -f .mvn/wrapper/maven-wrapper.jar ]; then
+            ./mvnw clean test -B
+          else
+            mvn clean test -B
+          fi
 
   frontend-build:
     name: 🅰️ Angular Build & Bundle Audit
