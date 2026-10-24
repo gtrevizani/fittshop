@@ -1,10 +1,8 @@
 import { Component, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
 import { CartService } from '../../services/cart.service';
-import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-auth-modal',
@@ -35,39 +33,23 @@ export class AuthModalComponent {
 
   constructor(
     public authService: AuthService,
-    private cartService: CartService,
-    private http: HttpClient
+    private cartService: CartService
   ) {}
 
   submitLogin(): void {
     this.isLoading = true;
     this.errorMessage = '';
+    this.successMessage = '';
 
-    const payload = {
-      email: this.loginEmail,
-      password: this.loginPassword
-    };
-
-    this.http.post<any>(`${environment.apiUrl}/auth/login`, payload).subscribe({
+    this.authService.login(this.loginEmail, this.loginPassword).subscribe({
       next: (res) => {
         this.isLoading = false;
-        this.authService.currentUserName.set(res.name);
-        this.authService.setRole(res.role);
         this.successMessage = `Bem-vindo de volta, ${res.name}!`;
-        setTimeout(() => this.closeEvent.emit(), 1200);
+        setTimeout(() => this.closeEvent.emit(), 1000);
       },
       error: (err) => {
         this.isLoading = false;
-        // Fallback for dev demo
-        if (this.loginEmail.includes('@')) {
-          const name = this.loginEmail.split('@')[0].toUpperCase();
-          this.authService.currentUserName.set(name);
-          this.authService.setRole('ROLE_CUSTOMER');
-          this.successMessage = `Conectado como ${name}!`;
-          setTimeout(() => this.closeEvent.emit(), 1000);
-        } else {
-          this.errorMessage = err.error?.message || 'Falha ao autenticar. Verifique seus dados.';
-        }
+        this.errorMessage = err.error?.message || err.error?.error || 'Credenciais inválidas. Verifique seu e-mail e senha.';
       }
     });
   }
@@ -75,27 +57,26 @@ export class AuthModalComponent {
   submitRegister(): void {
     this.isLoading = true;
     this.errorMessage = '';
+    this.successMessage = '';
 
     const payload = {
       name: this.registerName,
       email: this.registerEmail,
       password: this.registerPassword,
-      phone: this.registerPhone,
-      cpf: this.registerCpf
+      phone: this.registerPhone || undefined,
+      cpf: this.registerCpf || undefined
     };
 
-    this.http.post<any>(`${environment.apiUrl}/auth/register`, payload).subscribe({
+    this.authService.register(payload).subscribe({
       next: (res) => {
         this.isLoading = false;
-        this.authService.currentUserName.set(res.name);
-        this.authService.setRole('ROLE_CUSTOMER');
         this.cartService.userFittCoinsBalance.set(50);
         this.successMessage = `🎉 Conta criada com sucesso! Você ganhou 50 FittCoins de bônus!`;
-        setTimeout(() => this.closeEvent.emit(), 1500);
+        setTimeout(() => this.closeEvent.emit(), 1200);
       },
       error: (err) => {
         this.isLoading = false;
-        this.errorMessage = err.error?.message || 'Erro ao realizar cadastro. Tente outro e-mail.';
+        this.errorMessage = err.error?.message || err.error?.error || 'Erro ao realizar cadastro. Tente outro e-mail.';
       }
     });
   }
