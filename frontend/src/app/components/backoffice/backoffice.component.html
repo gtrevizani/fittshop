@@ -113,6 +113,45 @@
             </table>
           </div>
         </div>
+
+        <!-- Trilha de Auditoria DevSecOps Imutável (SHA-256) -->
+        <div class="panel card-glass" style="grid-column: 1 / -1; margin-top: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h3>🛡️ Trilha de Auditoria DevSecOps de Estoque (Ledger Criptográfico SHA-256)</h3>
+            <button class="bo-refresh-btn" (click)="fetchAuditLogs()">🔄 Atualizar Logs</button>
+          </div>
+          <div class="stock-table-wrapper" *ngIf="auditLogs && auditLogs.length > 0">
+            <table class="bo-table">
+              <thead>
+                <tr>
+                  <th>Data/Hora</th>
+                  <th>Operação</th>
+                  <th>Produto</th>
+                  <th>Delta</th>
+                  <th>Estoque Final</th>
+                  <th>Lote</th>
+                  <th>Validade</th>
+                  <th>Hash Criptográfico SHA-256</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let log of auditLogs">
+                  <td>{{ log.createdAt | date:'dd/MM/yyyy HH:mm:ss' }}</td>
+                  <td><span class="stock-pill">{{ log.operationType }}</span></td>
+                  <td>{{ log.productName }}</td>
+                  <td><strong style="color: #4ade80;">+{{ log.quantityDelta }}</strong></td>
+                  <td>{{ log.resultingStock }}</td>
+                  <td><code>{{ log.batchCode || 'N/A' }}</code></td>
+                  <td>{{ log.expirationDate | date:'dd/MM/yyyy' }}</td>
+                  <td><code style="font-size: 0.68rem; color: #00f0ff;">{{ log.hashSha256 ? log.hashSha256.substring(0, 16) + '...' : 'OK' }}</code></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p *ngIf="!auditLogs || auditLogs.length === 0" style="color: var(--text-muted); font-size: 0.85rem; padding: 12px 0;">
+            Nenhuma movimentação de lote registrada no momento. Realize uma reposição acima para registrar o primeiro bloco no ledger.
+          </p>
+        </div>
       </div>
     </div>
 

@@ -47,6 +47,9 @@ export class BackofficeComponent implements OnInit {
   searchedAffiliateStatement: AffiliateStatementItem | null = null;
   affiliateSearchError = '';
 
+  // Auditoria DevSecOps state
+  auditLogs: any[] = [];
+
   constructor(
     public productService: ProductService,
     public authService: AuthService,
@@ -59,6 +62,14 @@ export class BackofficeComponent implements OnInit {
     }
     this.fetchOrders();
     this.fetchAffiliatesData();
+    this.fetchAuditLogs();
+  }
+
+  fetchAuditLogs(): void {
+    this.http.get<any[]>(`${environment.apiUrl}/inventory/audit-logs`).subscribe({
+      next: (logs) => this.auditLogs = logs || [],
+      error: () => this.auditLogs = []
+    });
   }
 
   fetchOrders(): void {
@@ -184,6 +195,7 @@ export class BackofficeComponent implements OnInit {
     ).subscribe({
       next: () => {
         this.estoqueSuccessMessage = `✅ Fardo recebido com sucesso no banco de dados! +${this.replenishQuantity} unidades adicionadas ao estoque com lote ${this.newBatchCode}.`;
+        this.fetchAuditLogs();
         setTimeout(() => (this.estoqueSuccessMessage = ''), 4000);
       },
       error: () => {
